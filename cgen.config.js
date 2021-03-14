@@ -1,5 +1,8 @@
 module.exports = {
   project: 'jscpp',
+  dependencies: {
+    './deps/googletest': {}
+  },
   targets: [
     {
       name: 'jscpptest',
@@ -7,19 +10,14 @@ module.exports = {
       sources: [
         './src/main.cpp'
       ],
-      includePaths: ['include'],
-      compileOptions: ['/execution-charset:utf-8']
-      // libs: ['add'],
-      // staticVCRuntime: true
-    }/* ,
+      // compileOptions: ['/execution-charset:utf-8']
+      libs: ['jscpp', 'gtest#', 'gtest_main#'],
+      staticVCRuntime: false
+    },
     {
-      name: 'add',
-      type: 'lib',
-      'sources': [
-        './src/lib.c'
-      ],
-      
-      staticVCRuntime: true
-    } */
+      name: 'jscpp',
+      type: 'interface',
+      interfaceIncludePaths: ['include']
+    }
   ]
 }

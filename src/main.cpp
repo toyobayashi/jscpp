@@ -1,11 +1,38 @@
-#include <iostream>
-#define JSCPP_FORCE_UTF8
+// #include <iostream>
+#include "gtest/gtest.h"
+// #define JSCPP_FORCE_UTF8
 #include "String.hpp"
-#include <cstdlib>
+// #include <cstdlib>
 
 using namespace js;
 
-int main () {
+TEST(jscppString, utf8) {
+  std::string original = "\x7a\xc3\x9f\xe6\xb0\xb4\xf0\x9f\x8d\x8c";
+  std::wstring r = fromUtf8(original);
+#ifdef _WIN32
+  EXPECT_EQ(r.size(), 5);
+  EXPECT_EQ(r[0], 122);
+  EXPECT_EQ(r[1], 223);
+  EXPECT_EQ(r[2], 27700);
+  EXPECT_EQ(r[3], 55356);
+  EXPECT_EQ(r[4], 57164);
+#else
+  EXPECT_EQ(r.size(), 4);
+  EXPECT_EQ(r[0], 122);
+  EXPECT_EQ(r[1], 223);
+  EXPECT_EQ(r[2], 27700);
+  EXPECT_EQ(r[3], 127820);
+#endif
+  std::string o = toUtf8(r);
+  EXPECT_STREQ(o.c_str(), original.c_str());
+}
+
+/* int main (int argc, char** argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+} */
+
+/* int main () {
   std::wstring r = fromUtf8("\x7a\xc3\x9f\xe6\xb0\xb4\xf0\x9f\x8d\x8c");
   std::string u = toUtf8(r);
   // std::wstring r = fromUtf8(u8"z\u00df\u6c34\U0001f34c");
@@ -43,4 +70,4 @@ int main () {
   String v = "啊啊啊";
   std::cout << v << std::endl;
   return 0;
-}
+} */
