@@ -63,12 +63,12 @@ public:
   String(const std::string& str) noexcept : _str(JSCPP_WSTR(str)) {}
   String(const wchar_t* wstr) noexcept : _str(wstr) {}
   String(const std::wstring& wstr) noexcept : _str(wstr) {}
-  String(int n) noexcept : _str(std::to_wstring(n)) {}
-  String(unsigned int n) noexcept : _str(std::to_wstring(n)) {}
-  String(long n) noexcept : _str(std::to_wstring(n)) {}
-  String(unsigned long n) noexcept : _str(std::to_wstring(n)) {}
-  String(long long n) noexcept : _str(std::to_wstring(n)) {}
-  String(unsigned long long n) noexcept : _str(std::to_wstring(n)) {}
+  String(int n): _str(std::to_wstring(n)) {}
+  String(unsigned int n): _str(std::to_wstring(n)) {}
+  String(long n): _str(std::to_wstring(n)) {}
+  String(unsigned long n): _str(std::to_wstring(n)) {}
+  String(long long n): _str(std::to_wstring(n)) {}
+  String(unsigned long long n): _str(std::to_wstring(n)) {}
   String(float n): _str(std::to_wstring(n)) { _trimZero(); }
   String(double n): _str(std::to_wstring(n)) { _trimZero(); }
   String(long double n): _str(std::to_wstring(n)) { _trimZero(); }
