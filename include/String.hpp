@@ -43,10 +43,10 @@ private:
 public:
   String() = default;
 
-  String(char c) noexcept: _str(JSCPP_FROM_STRING({ c, '\0' })) {}
+  String(char c) noexcept: _str(JSCPP_WSTR({ c, '\0' })) {}
   String(wchar_t c) noexcept: _str({ c, L'\0' }) {}
-  String(const char* str) noexcept : _str(JSCPP_FROM_STRING(str)) {}
-  String(const std::string& str) noexcept : _str(JSCPP_FROM_STRING(str)) {}
+  String(const char* str) noexcept : _str(JSCPP_WSTR(str)) {}
+  String(const std::string& str) noexcept : _str(JSCPP_WSTR(str)) {}
   String(const wchar_t* wstr) noexcept : _str(wstr) {}
   String(const std::wstring& wstr) noexcept : _str(wstr) {}
   String(int n) noexcept : _str(std::to_wstring(n)) {}
@@ -72,7 +72,7 @@ public:
   }
 
   std::string toString() const noexcept {
-    return JSCPP_TO_STRING(_str);
+    return JSCPP_STR(_str);
   }
 
   const wchar_t* data() const noexcept {
@@ -296,7 +296,7 @@ inline void swap(String& l, String& r) noexcept {
 }
 
 inline std::ostream& operator<<(std::ostream& out, const String& str) {
-  out << JSCPP_TO_STRING(str._str);
+  out << JSCPP_STR(str._str);
   return out;
 }
 

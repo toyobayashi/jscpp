@@ -16,12 +16,12 @@
 
 #include <string>
 
-#ifdef JSCPP_FORCE_UTF8
-  #define JSCPP_TO_STRING js::toUtf8
-  #define JSCPP_FROM_STRING js::fromUtf8
+#ifdef JSCPP_UTF8
+  #define JSCPP_STR js::toUtf8
+  #define JSCPP_WSTR js::fromUtf8
 #else
-  #define JSCPP_TO_STRING js::toString
-  #define JSCPP_FROM_STRING js::fromString
+  #define JSCPP_STR js::toString
+  #define JSCPP_WSTR js::fromString
 #endif
 
 namespace js {
@@ -64,7 +64,11 @@ inline std::wstring fromString(const std::string& str) {
   MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, &res[0], len);
   return res;
 #else
-  return fromUtf8(str);
+  size_t len = std::mbstowcs(nullptr, str.c_str(), 0);
+  std::wstring res;
+  res.resize(len);
+  std::mbstowcs(&res[0], str.c_str(), len + 1);
+  return res;
 #endif
 }
 
@@ -106,7 +110,11 @@ inline std::string toString(const std::wstring& wstr) {
   WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, &res[0], len, nullptr, nullptr);
   return res;
 #else
-  return toUtf8(wstr);
+  size_t len = std::wcstombs(nullptr, wstr.c_str(), 0);
+  std::string res;
+  res.resize(len);
+  std::wcstombs(&res[0], wstr.c_str(), len + 1);
+  return res;
 #endif
 }
 
