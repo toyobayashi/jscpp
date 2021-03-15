@@ -4,14 +4,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <regex>
 #include "utf8.hpp"
 
 namespace js {
-
-class String;
 
 class String {
 private:
@@ -26,7 +25,7 @@ public:
     return (wchar_t)(uint16_t)code;
   }
 
-  static String fromCharCode(const std::vector<uint32_t>& codes) noexcept {
+  static String fromCharCode(const std::vector<uint32_t>& codes) {
     String tmp;
     for (const uint32_t c : codes) {
       tmp += (wchar_t)(uint16_t)c;
@@ -35,18 +34,18 @@ public:
   }
 
   template <typename... Args>
-  static String fromCharCode(uint32_t code, Args... args) noexcept {
+  static String fromCharCode(uint32_t code, Args... args) {
     String tmp = (wchar_t)(uint16_t)(code);
     return tmp + fromCharCode(args...);
   }
 
-  static String fromCodePoint(uint32_t code) noexcept {
+  static String fromCodePoint(uint32_t code) {
     return fromCodePoint(std::vector<uint32_t>({ code }));
   }
-  static String fromCodePoint(const std::vector<uint32_t>& codes) noexcept;
+  static String fromCodePoint(const std::vector<uint32_t>& codes);
 
 private:
-  void _trimZero() noexcept {
+  void _trimZero() {
     size_t c = 0;
     size_t len = _str.length();
     for (size_t i = len - 1; i >= 0; i--) {
@@ -70,9 +69,9 @@ public:
   String(unsigned long n) noexcept : _str(std::to_wstring(n)) {}
   String(long long n) noexcept : _str(std::to_wstring(n)) {}
   String(unsigned long long n) noexcept : _str(std::to_wstring(n)) {}
-  String(float n) noexcept : _str(std::to_wstring(n)) { _trimZero(); }
-  String(double n) noexcept : _str(std::to_wstring(n)) { _trimZero(); }
-  String(long double n) noexcept : _str(std::to_wstring(n)) { _trimZero(); }
+  String(float n): _str(std::to_wstring(n)) { _trimZero(); }
+  String(double n): _str(std::to_wstring(n)) { _trimZero(); }
+  String(long double n): _str(std::to_wstring(n)) { _trimZero(); }
 
   size_t length() const noexcept {
     return _str.length();
@@ -148,19 +147,19 @@ public:
     return *this;
   }
 
-  String concat(const String& s) const noexcept {
+  String concat(const String& s) const {
     return _str + s._str;
   }
 
   template <typename... Args>
-  String concat(const String& s, Args... args) const noexcept {
+  String concat(const String& s, Args... args) const {
     String tmp = this->concat(s);
     return tmp.concat(args...);
   }
 
-  bool startsWith(const String& searchString, size_t position = 0) const noexcept;
-  bool endsWith(const String& search) const noexcept;
-  bool endsWith(const String& search, size_t length) const noexcept;
+  bool startsWith(const String& searchString, size_t position = 0) const;
+  bool endsWith(const String& search) const;
+  bool endsWith(const String& search, size_t length) const;
 
   bool includes(const String& searchString = L"undefined", size_t position = 0U) const noexcept {
     if (position + searchString.length() > this->length()) {
@@ -171,20 +170,20 @@ public:
   }
 
   size_t indexOf(const String& searchValue = L"undefined", size_t fromIndex = 0U) const noexcept {
-    return _str.find_first_of(searchValue._str, fromIndex);
+    return _str.find(searchValue._str, fromIndex);
   }
 
   size_t lastIndexOf(const String& searchValue = L"undefined", size_t fromIndex = std::wstring::npos) const noexcept {
-    return _str.find_last_of(searchValue._str, fromIndex);
+    return _str.rfind(searchValue._str, fromIndex);
   }
 
-  String substring(size_t indexStart) const noexcept {
+  String substring(size_t indexStart) const {
     size_t len = _str.length();
     if (indexStart > len) indexStart = len;
     return _str.substr(indexStart);
   }
 
-  String substring(size_t indexStart, size_t indexEnd) const noexcept {
+  String substring(size_t indexStart, size_t indexEnd) const {
     size_t len = _str.length();
     if (indexStart > len) indexStart = len;
     if (indexEnd > len) indexEnd = len;
@@ -194,20 +193,20 @@ public:
     return _str.substr(indexStart, indexEnd - indexStart);
   }
 
-  String padEnd(size_t targetLength, const String& str = L" ") const noexcept;
-  String padStart(size_t targetLength, const String& str = L" ") const noexcept;
+  String padEnd(size_t targetLength, const String& str = L" ") const;
+  String padStart(size_t targetLength, const String& str = L" ") const;
 
-  String slice(int beginIndex = 0) const noexcept {
+  String slice(int beginIndex = 0) const {
     if (beginIndex < 0) beginIndex = (int)length() + beginIndex;
     return this->substring(beginIndex);
   }
-  String slice(int beginIndex, int endIndex) const noexcept {
+  String slice(int beginIndex, int endIndex) const {
     if (beginIndex < 0) beginIndex = (int)length() + beginIndex;
     if (endIndex < 0) endIndex = (int)length() + endIndex;
     return this->substring(beginIndex, endIndex);
   }
 
-  String repeat(size_t count = 0) const noexcept {
+  String repeat(size_t count = 0) const {
     String str = *this;
     if (str.length() == 0 || count == 0) {
       return String();
@@ -229,7 +228,7 @@ public:
     return rpt;
   }
 
-  String replace(const String& substr, const String& newSubStr) const noexcept {
+  String replace(const String& substr, const String& newSubStr) const {
     String res = *this;
     size_t index = res.indexOf(substr);
     if (index != std::wstring::npos) {
@@ -238,7 +237,7 @@ public:
     return res;
   }
 
-  String replace(const std::wregex& regexp, const String& newSubStr) const noexcept {
+  String replace(const std::wregex& regexp, const String& newSubStr) const {
     return std::regex_replace(_str, regexp, newSubStr._str);
   }
 
@@ -246,16 +245,17 @@ public:
     return { *this };
   }
 
-  std::vector<String> split(const String& seprator, int limit = -1) const noexcept {
+  std::vector<String> split(const String& seprator, int limit = -1) const {
     size_t seplen = seprator.length();
     std::vector<String> res;
     if (seplen == 0) {
       size_t len = _str.length();
+      res.reserve(limit >= 0 ? std::min(limit, (int)len) : len);
       for (size_t s = 0; s < len; s++) {
         if (limit >= 0 && res.size() == limit) {
           return res;
         }
-        res.push_back(String(_str[s]));
+        res.emplace_back(_str[s]);
       }
       return res;
     }
@@ -270,14 +270,14 @@ public:
       if (limit >= 0 && res.size() == limit) {
         return res;
       }
-      res.push_back(left);
+      res.emplace_back(left);
       right = this->substring(rightStart);
       sub = right;
     }
     if (limit >= 0 && res.size() == limit) {
       return res;
     }
-    res.push_back(sub);
+    res.emplace_back(sub);
     return res;
   }
 
@@ -303,13 +303,13 @@ public:
     return res;
   }
 
-  String trim() const noexcept {
+  String trim() const {
     return this->replace(std::wregex(L"[\\s\\uFEFF\\xA0]+|[\\s\\uFEFF\\xA0]+$"), "");
   }
-  String trimEnd() const noexcept {
+  String trimEnd() const {
     return this->replace(std::wregex(L"[\\s\\uFEFF\\xA0]+$"), "");
   }
-  String trimStart() const noexcept {
+  String trimStart() const {
     return this->replace(std::wregex(L"^[\\s\\uFEFF\\xA0]+"), "");
   }
 
@@ -336,79 +336,79 @@ inline std::istream& operator>>(std::istream& in, String& str) {
   return in;
 }
 
-inline String operator+(const String& l, const String& r) noexcept {
+inline String operator+(const String& l, const String& r) {
   return l.concat(r);
 }
 
-inline String operator+(const char* l, const String& r) noexcept {
+inline String operator+(const char* l, const String& r) {
   return String(l).concat(r);
 }
 
-inline String operator+(char l, const String& r) noexcept {
+inline String operator+(char l, const String& r) {
   return String(l).concat(r);
 }
 
-inline String operator+(const wchar_t* l, const String& r) noexcept {
+inline String operator+(const wchar_t* l, const String& r) {
   return String(l).concat(r);
 }
 
-inline String operator+(wchar_t l, const String& r) noexcept {
+inline String operator+(wchar_t l, const String& r) {
   return String(l).concat(r);
 }
 
-inline String operator+(const String& l, const char* r) noexcept {
+inline String operator+(const String& l, const char* r) {
   return l.concat(r);
 }
 
-inline String operator+(const String& l, char r) noexcept {
+inline String operator+(const String& l, char r) {
   return l.concat(r);
 }
 
-inline String operator+(const String& l, const wchar_t* r) noexcept {
+inline String operator+(const String& l, const wchar_t* r) {
   return l.concat(r);
 }
 
-inline String operator+(const String& l, wchar_t r) noexcept {
+inline String operator+(const String& l, wchar_t r) {
   return l.concat(r);
 }
 
-inline String operator+(const String& l, int r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, unsigned int r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, long r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, unsigned long r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, long long r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, unsigned long long r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, float r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, double r) noexcept { return l.concat(r); }
-inline String operator+(const String& l, long double r) noexcept { return l.concat(r); }
+inline String operator+(const String& l, int r) { return l.concat(r); }
+inline String operator+(const String& l, unsigned int r) { return l.concat(r); }
+inline String operator+(const String& l, long r) { return l.concat(r); }
+inline String operator+(const String& l, unsigned long r) { return l.concat(r); }
+inline String operator+(const String& l, long long r) { return l.concat(r); }
+inline String operator+(const String& l, unsigned long long r) { return l.concat(r); }
+inline String operator+(const String& l, float r) { return l.concat(r); }
+inline String operator+(const String& l, double r) { return l.concat(r); }
+inline String operator+(const String& l, long double r) { return l.concat(r); }
 
-inline String operator+(int l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(unsigned int l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(long l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(unsigned long l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(long long l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(unsigned long long l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(float l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(double l, const String& r) noexcept { return String(l).concat(r); }
-inline String operator+(long double l, const String& r) noexcept { return String(l).concat(r); }
+inline String operator+(int l, const String& r) { return String(l).concat(r); }
+inline String operator+(unsigned int l, const String& r) { return String(l).concat(r); }
+inline String operator+(long l, const String& r) { return String(l).concat(r); }
+inline String operator+(unsigned long l, const String& r) { return String(l).concat(r); }
+inline String operator+(long long l, const String& r) { return String(l).concat(r); }
+inline String operator+(unsigned long long l, const String& r) { return String(l).concat(r); }
+inline String operator+(float l, const String& r) { return String(l).concat(r); }
+inline String operator+(double l, const String& r) { return String(l).concat(r); }
+inline String operator+(long double l, const String& r) { return String(l).concat(r); }
 
 inline bool operator==(const String& l, const String& r) noexcept {
   return l.compare(r) == 0;
 }
 
-inline bool operator==(const char* l, const String& r) {
+inline bool operator==(const char* l, const String& r) noexcept {
   return r.compare(l) == 0;
 }
 
-inline bool operator==(const wchar_t* l, const String& r) {
+inline bool operator==(const wchar_t* l, const String& r) noexcept {
   return r.compare(l) == 0;
 }
 
-inline bool operator==(const String& l, const char* r) {
+inline bool operator==(const String& l, const char* r) noexcept {
   return l.compare(r) == 0;
 }
 
-inline bool operator==(const String& l, const wchar_t* r) {
+inline bool operator==(const String& l, const wchar_t* r) noexcept {
   return l.compare(r) == 0;
 }
 
@@ -416,7 +416,7 @@ inline bool operator<(const String& l, const String& r) noexcept {
   return l.compare(r) < 0;
 }
 
-inline String String::fromCodePoint(const std::vector<uint32_t>& codes) noexcept {
+inline String String::fromCodePoint(const std::vector<uint32_t>& codes) {
   std::vector<uint32_t> codeUnits;
   size_t codeLen = 0;
   String result;
@@ -445,22 +445,22 @@ inline String String::fromCodePoint(const std::vector<uint32_t>& codes) noexcept
   return result + fromCharCode(codeUnits);
 }
 
-inline bool String::startsWith(const String& searchString, size_t position) const noexcept {
+inline bool String::startsWith(const String& searchString, size_t position) const {
   return this->substring(position, position + searchString.length()) == searchString;
 }
 
-inline bool String::endsWith(const String& search) const noexcept {
+inline bool String::endsWith(const String& search) const {
   size_t length = _str.length();
   return this->substring(length - search.length(), length) == search;
 }
-inline bool String::endsWith(const String& search, size_t length) const noexcept {
+inline bool String::endsWith(const String& search, size_t length) const {
   size_t len = _str.length();
   if (length > len) {
     length = len;
   }
   return this->substring(length - search.length(), length) == search;
 }
-inline String String::padEnd(size_t targetLength, const String& str) const noexcept {
+inline String String::padEnd(size_t targetLength, const String& str) const {
   size_t len = _str.length();
   if (len > targetLength) {
     return *this;
@@ -473,7 +473,7 @@ inline String String::padEnd(size_t targetLength, const String& str) const noexc
   }
   return *this + padString.substring(0, targetLength);
 }
-inline String String::padStart(size_t targetLength, const String& str) const noexcept {
+inline String String::padStart(size_t targetLength, const String& str) const {
   size_t len = _str.length();
   if (len > targetLength) {
     return *this;

@@ -74,6 +74,66 @@ TEST(jscppString, fromCodePoint) {
   EXPECT_STREQ(String::fromCodePoint(8888888).data(), L"");
 }
 
+TEST(jscppString, concat) {
+  String hello = "Hello, ";
+  EXPECT_STREQ(hello.concat("Kevin", ". Have a nice day.").data(), L"Hello, Kevin. Have a nice day.");
+
+  String str;
+  EXPECT_STREQ(str.concat("Hello", " ", "Venkat", "!").data(), L"Hello Venkat!");
+}
+
+TEST(jscppString, endsWith) {
+  String str = "To be, or not to be, that is the question.";
+
+  EXPECT_TRUE(str.endsWith("question."));
+  EXPECT_FALSE(str.endsWith("to be"));
+  EXPECT_TRUE(str.endsWith("to be", 19));
+}
+
+TEST(jscppString, includes) {
+  String str = "To be, or not to be, that is the question.";
+
+  EXPECT_TRUE(str.includes("To be"));
+  EXPECT_TRUE(str.includes("question"));
+  EXPECT_FALSE(str.includes("nonexistent"));
+  EXPECT_FALSE(str.includes("To be", 1));
+  EXPECT_FALSE(str.includes("TO BE"));
+}
+
+TEST(jscppString, lastIndexOf) {
+  String str = "Brave new world";
+
+  EXPECT_EQ(str.indexOf("w"), 8);
+  EXPECT_EQ(str.lastIndexOf("w"), 10);
+  EXPECT_EQ(str.indexOf("new"), 6);
+  EXPECT_EQ(str.lastIndexOf("new"), 6);
+}
+
+TEST(jscppString, split) {
+  String myString = "Hello World. How are you doing?";
+  std::vector<String> splits = myString.split(" ", 3);
+  EXPECT_EQ(splits.size(), 3);
+  EXPECT_STREQ(splits[0].data(), L"Hello");
+  EXPECT_STREQ(splits[1].data(), L"World.");
+  EXPECT_STREQ(splits[2].data(), L"How");
+
+  std::vector<String> splits2 = myString.split(" ");
+  EXPECT_EQ(splits2.size(), 6);
+  EXPECT_STREQ(splits2[0].data(), L"Hello");
+  EXPECT_STREQ(splits2[1].data(), L"World.");
+  EXPECT_STREQ(splits2[2].data(), L"How");
+  EXPECT_STREQ(splits2[3].data(), L"are");
+  EXPECT_STREQ(splits2[4].data(), L"you");
+  EXPECT_STREQ(splits2[5].data(), L"doing?");
+
+  std::vector<String> splits3 = myString.split();
+  EXPECT_EQ(splits3.size(), 1);
+  EXPECT_EQ(splits3[0], myString);
+
+  std::vector<String> splits4 = myString.split("");
+  EXPECT_EQ(splits4.size(), myString.length());
+}
+
 /* int main (int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
