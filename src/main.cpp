@@ -1,7 +1,7 @@
 // #include <iostream>
 #include "gtest/gtest.h"
 // #define JSCPP_FORCE_UTF8
-#include "String.hpp"
+#include "jscpp/String.hpp"
 // #include <cstdlib>
 
 using namespace js;
