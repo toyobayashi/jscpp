@@ -2,10 +2,30 @@
 #define __JSCPP_ENCODING_HPP__
 
 #ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Windows.h>
+
+extern "C" {
+
+int __stdcall
+MultiByteToWideChar(
+  unsigned int CodePage,
+  unsigned long dwFlags,
+  const char* lpMultiByteStr,
+  int cbMultiByte,
+  wchar_t* lpWideCharStr,
+  int cchWideChar);
+
+int __stdcall
+WideCharToMultiByte(
+  unsigned int CodePage,
+  unsigned long dwFlags,
+  const wchar_t* lpWideCharStr,
+  int cchWideChar,
+  char* lpMultiByteStr,
+  int cbMultiByte,
+  const char* lpDefaultChar,
+  int* lpUsedDefaultChar);
+
+}
 
 #else
 
@@ -28,11 +48,11 @@ namespace js {
 
 inline std::wstring fromUtf8(const std::string& str) {
 #ifdef _WIN32
-  int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+  int len = MultiByteToWideChar(65001, 0, str.c_str(), -1, nullptr, 0);
   if (len == 0) return L"";
   std::wstring res;
   res.resize(len - 1);
-  MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &res[0], len);
+  MultiByteToWideChar(65001, 0, str.c_str(), -1, &res[0], len);
   return res;
 #else
   std::string targetLocale = "en_US.utf8";
@@ -57,11 +77,11 @@ inline std::wstring fromUtf8(const std::string& str) {
 
 inline std::wstring fromString(const std::string& str) {
 #ifdef _WIN32
-  int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, nullptr, 0);
+  int len = MultiByteToWideChar(0, 0, str.c_str(), -1, nullptr, 0);
   if (len == 0) return L"";
   std::wstring res;
   res.resize(len - 1);
-  MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, &res[0], len);
+  MultiByteToWideChar(0, 0, str.c_str(), -1, &res[0], len);
   return res;
 #else
   size_t len = std::mbstowcs(nullptr, str.c_str(), 0);
@@ -74,11 +94,11 @@ inline std::wstring fromString(const std::string& str) {
 
 inline std::string toUtf8(const std::wstring& wstr) {
 #ifdef _WIN32
-  int len = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+  int len = WideCharToMultiByte(65001, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
   if (len == 0) return "";
   std::string res;
   res.resize(len - 1);
-  WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &res[0], len, nullptr, nullptr);
+  WideCharToMultiByte(65001, 0, wstr.c_str(), -1, &res[0], len, nullptr, nullptr);
   return res;
 #else
   std::string targetLocale = "en_US.utf8";
@@ -103,11 +123,11 @@ inline std::string toUtf8(const std::wstring& wstr) {
 
 inline std::string toString(const std::wstring& wstr) {
 #ifdef _WIN32
-  int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+  int len = WideCharToMultiByte(0, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
   if (len == 0) return "";
   std::string res;
   res.resize(len - 1);
-  WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, &res[0], len, nullptr, nullptr);
+  WideCharToMultiByte(0, 0, wstr.c_str(), -1, &res[0], len, nullptr, nullptr);
   return res;
 #else
   size_t len = std::wcstombs(nullptr, wstr.c_str(), 0);
