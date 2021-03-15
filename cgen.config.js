@@ -11,8 +11,8 @@ module.exports = {
         './src/main.cpp'
       ],
       // compileOptions: ['/execution-charset:utf-8']
-      libs: ['jscpp', 'gtest#', 'gtest_main#'],
-      staticVCRuntime: false
+      libs: ['jscpp', 'gtest!', 'gtest_main!'],
+      staticVCRuntime: true
     },
     {
       name: 'jscpp',

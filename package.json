@@ -8,6 +8,8 @@
     "build:debug": "cgen build --debug",
     "clean": "cgen clean",
     "rebuild": "cgen rebuild -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF",
-    "rebuild:debug": "cgen rebuild --debug -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF"
+    "rebuild:debug": "cgen rebuild --debug -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF",
+    "rebuild:wasm": "cgen rebuild -e -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF -B test/build",
+    "clean:wasm": "cgen clean -B test/build"
   }
 }

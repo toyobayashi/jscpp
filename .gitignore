@@ -1,2 +1,3 @@
 .cgenbuild
 /CMakeLists.txt
+/test/build
