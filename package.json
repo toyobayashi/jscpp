@@ -9,7 +9,11 @@
     "clean": "cgen clean",
     "rebuild": "cgen rebuild -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF",
     "rebuild:debug": "cgen rebuild --debug -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF",
+    "build:wasm": "cgen build -B test/build",
     "rebuild:wasm": "cgen rebuild -e -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF -B test/build",
     "clean:wasm": "cgen clean -B test/build"
+  },
+  "devDependencies": {
+    "@tybys/cgen": "^0.6.0"
   }
 }
