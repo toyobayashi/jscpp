@@ -18,17 +18,32 @@ private:
   std::wstring _str;
 
 public:
-  static String fromCharCode(uint16_t code) noexcept {
-    return (wchar_t)code;
+  static String fromCharCode() noexcept {
+    return "";
+  }
+
+  static String fromCharCode(uint32_t code) noexcept {
+    return (wchar_t)(uint16_t)code;
+  }
+
+  static String fromCharCode(const std::vector<uint32_t>& codes) noexcept {
+    String tmp;
+    for (const uint32_t c : codes) {
+      tmp += (wchar_t)(uint16_t)c;
+    }
+    return tmp;
+  }
+
+  template <typename... Args>
+  static String fromCharCode(uint32_t code, Args... args) noexcept {
+    String tmp = (wchar_t)(uint16_t)(code);
+    return tmp + fromCharCode(args...);
   }
 
   static String fromCodePoint(uint32_t code) noexcept {
-    size_t len = sizeof(wchar_t);
-    if (len == 2) {
-      return (wchar_t)(code & 0x0000FFFFU);
-    }
-    return (wchar_t)code;
+    return fromCodePoint(std::vector<uint32_t>({ code }));
   }
+  static String fromCodePoint(const std::vector<uint32_t>& codes) noexcept;
 
 private:
   void _trimZero() noexcept {
@@ -43,8 +58,8 @@ private:
 public:
   String() = default;
 
-  String(char c) noexcept: _str(JSCPP_WSTR({ c, '\0' })) {}
-  String(wchar_t c) noexcept: _str({ c, L'\0' }) {}
+  String(char c) noexcept: _str(JSCPP_WSTR({ c })) {}
+  String(wchar_t c) noexcept: _str({ c }) {}
   String(const char* str) noexcept : _str(JSCPP_WSTR(str)) {}
   String(const std::string& str) noexcept : _str(JSCPP_WSTR(str)) {}
   String(const wchar_t* wstr) noexcept : _str(wstr) {}
@@ -63,15 +78,15 @@ public:
     return _str.length();
   }
 
-  const std::wstring& getWString() const noexcept {
+  const std::wstring& ref() const noexcept {
     return _str;
   }
 
-  std::wstring toWString() const noexcept {
+  std::wstring wstr() const noexcept {
     return _str;
   }
 
-  std::string toString() const noexcept {
+  std::string str() const noexcept {
     return JSCPP_STR(_str);
   }
 
@@ -108,9 +123,25 @@ public:
     return (uint16_t)c;
   }
 
-  uint32_t codePointAt(size_t index = 0) const noexcept {
-    if (index >= _str.length()) return 0U;
-    return (uint32_t)_str[index];
+  uint32_t codePointAt(size_t position = 0) const noexcept {
+    String string = *this;
+    size_t size = string.length();
+    size_t index = position;
+    if (index >= size) {
+      return 0U;
+    }
+    uint16_t first = string.charCodeAt(index);
+    uint16_t second;
+    if (
+      first >= 0xD800 && first <= 0xDBFF &&
+      size > index + 1
+    ) {
+      second = string.charCodeAt(index + 1);
+      if (second >= 0xDC00 && second <= 0xDFFF) {
+        return ((uint32_t)first - 0xD800) * 0x400 + (uint32_t)second - 0xDC00 + 0x10000;
+      }
+    }
+    return first;
   }
 
   String concat() const noexcept {
@@ -383,6 +414,35 @@ inline bool operator==(const String& l, const wchar_t* r) {
 
 inline bool operator<(const String& l, const String& r) noexcept {
   return l.compare(r) < 0;
+}
+
+inline String String::fromCodePoint(const std::vector<uint32_t>& codes) noexcept {
+  std::vector<uint32_t> codeUnits;
+  size_t codeLen = 0;
+  String result;
+  size_t index = 0;
+  size_t len = codes.size();
+  for (; index != len; ++index) {
+    uint32_t codePoint = codes[index];
+    if (codePoint >= 0x10FFFF) {
+      return ""; // RangeError
+    }
+
+    if (codePoint <= 0xFFFF) {
+      codeUnits.push_back(codePoint);
+      codeLen = codeUnits.size();
+    } else {
+      codePoint -= 0x10000;
+      codeUnits.push_back((codePoint >> 10) + 0xD800);
+      codeUnits.push_back((codePoint % 0x400) + 0xDC00);
+      codeLen = codeUnits.size();
+    }
+    if (codeLen >= 0x3fff) {
+      result += fromCharCode(codeUnits);
+      codeUnits.clear();
+    }
+  }
+  return result + fromCharCode(codeUnits);
 }
 
 inline bool String::startsWith(const String& searchString, size_t position) const noexcept {
