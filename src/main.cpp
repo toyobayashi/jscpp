@@ -1,7 +1,7 @@
 // #include <iostream>
 #include "gtest/gtest.h"
 // #define JSCPP_FORCE_UTF8
-#include "jscpp/String.hpp"
+#include "jscpp/process.hpp"
 // #include <cstdlib>
 
 using namespace js;
@@ -210,6 +210,8 @@ TEST(jscppString, rangeFor) {
     EXPECT_EQ(i, str[index]);
     index++;
   }
+  auto a = process::env();
+  std::cout << a.size() << std::endl;
 }
 
 /* int main (int argc, char** argv) {

@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <regex>
@@ -262,7 +261,8 @@ public:
     std::vector<String> res;
     if (seplen == 0) {
       size_t len = _str.length();
-      res.reserve(limit >= 0 ? std::min(limit, (int)len) : len);
+      size_t cap = limit >= 0 ? ((size_t)limit < len ? limit : len) : len;
+      res.reserve(cap);
       for (size_t s = 0; s < len; s++) {
         if (limit >= 0 && res.size() == limit) {
           return res;

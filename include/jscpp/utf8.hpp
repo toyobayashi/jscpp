@@ -3,29 +3,10 @@
 
 #ifdef _WIN32
 
-extern "C" {
-
-int __stdcall
-MultiByteToWideChar(
-  unsigned int CodePage,
-  unsigned long dwFlags,
-  const char* lpMultiByteStr,
-  int cbMultiByte,
-  wchar_t* lpWideCharStr,
-  int cchWideChar);
-
-int __stdcall
-WideCharToMultiByte(
-  unsigned int CodePage,
-  unsigned long dwFlags,
-  const wchar_t* lpWideCharStr,
-  int cchWideChar,
-  char* lpMultiByteStr,
-  int cbMultiByte,
-  const char* lpDefaultChar,
-  int* lpUsedDefaultChar);
-
-}
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
 
 #else
 
