@@ -6,6 +6,8 @@
 
 using namespace js;
 
+static Process process;
+
 TEST(jscppString, utf8) {
   std::string original = "\x7a\xc3\x9f\xe6\xb0\xb4\xf0\x9f\x8d\x8c";
   std::wstring r = fromUtf8(original);
@@ -210,8 +212,7 @@ TEST(jscppString, rangeFor) {
     EXPECT_EQ(i, str[index]);
     index++;
   }
-  auto a = process::env();
-  std::cout << a.size() << std::endl;
+  std::cout << process.env.size() << std::endl;
 }
 
 /* int main (int argc, char** argv) {
