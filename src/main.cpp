@@ -108,6 +108,51 @@ TEST(jscppString, lastIndexOf) {
   EXPECT_EQ(str.indexOf("new"), 6);
   EXPECT_EQ(str.lastIndexOf("new"), 6);
 }
+TEST(jscppString, padEnd) {
+  String str = "abc";
+
+  EXPECT_STREQ(str.padEnd(10).data(), L"abc       ");
+  EXPECT_STREQ(str.padEnd(10, "foo").data(), L"abcfoofoof");
+  EXPECT_STREQ(str.padEnd(6, "123456").data(), L"abc123");
+  EXPECT_STREQ(str.padEnd(1).data(), L"abc");
+}
+
+TEST(jscppString, padStart) {
+  String str = "abc";
+
+  EXPECT_STREQ(str.padStart(10).data(), L"       abc");
+  EXPECT_STREQ(str.padStart(10, "foo").data(), L"foofoofabc");
+  EXPECT_STREQ(str.padStart(6, "123456").data(), L"123abc");
+  EXPECT_STREQ(str.padStart(8, "0").data(), L"00000abc");
+  EXPECT_STREQ(str.padStart(1).data(), L"abc");
+}
+
+TEST(jscppString, repeat) {
+  String str = "abc";
+
+  EXPECT_STREQ(str.repeat(0).data(), L"");
+  EXPECT_STREQ(str.repeat(1).data(), L"abc");
+  EXPECT_STREQ(str.repeat(2).data(), L"abcabc");
+}
+
+TEST(jscppString, replace) {
+  String str = L"中文一二三中文";
+
+  EXPECT_STREQ(str.replace(L"中文", L"英文").data(), L"英文一二三中文");
+  EXPECT_STREQ(str.replace(std::wregex(L"中文"), L"英文").data(), L"英文一二三英文");
+}
+
+TEST(jscppString, slice) {
+  String str = "The morning is upon us.";
+
+  EXPECT_STREQ(str.slice(1, 8).data(), L"he morn");
+  EXPECT_STREQ(str.slice(4, -2).data(), L"morning is upon u");
+  EXPECT_STREQ(str.slice(12).data(), L"is upon us.");
+  EXPECT_STREQ(str.slice(30).data(), L"");
+  EXPECT_STREQ(str.slice(-3).data(), L"us.");
+  EXPECT_STREQ(str.slice(-3, -1).data(), L"us");
+  EXPECT_STREQ(str.slice(0, -1).data(), L"The morning is upon us");
+}
 
 TEST(jscppString, split) {
   String myString = "Hello World. How are you doing?";
@@ -134,47 +179,40 @@ TEST(jscppString, split) {
   EXPECT_EQ(splits4.size(), myString.length());
 }
 
+TEST(jscppString, startsWith) {
+  String str = "To be, or not to be, that is the question.";
+
+  EXPECT_TRUE(str.startsWith("To be"));
+  EXPECT_FALSE(str.startsWith("not to be"));
+  EXPECT_TRUE(str.startsWith("not to be", 10));
+}
+
+TEST(jscppString, toCase) {
+  EXPECT_STREQ(String(L"中文简体 zh-CN || zh-Hans").toLowerCase().data(), L"中文简体 zh-cn || zh-hans");
+  EXPECT_STREQ(String("ALPHABET").toLowerCase().data(), L"alphabet");
+
+  EXPECT_STREQ(String(L"中文简体 zh-cn || zh-hans").toUpperCase().data(), L"中文简体 ZH-CN || ZH-HANS");
+  EXPECT_STREQ(String("alphabet").toUpperCase().data(), L"ALPHABET");
+}
+
+TEST(jscppString, trim) {
+  EXPECT_STREQ(String("   foo  ").trim().data(), L"foo");
+  EXPECT_STREQ(String("foo    ").trim().data(), L"foo");
+
+  EXPECT_STREQ(String("   foo  ").trimEnd().data(), L"   foo");
+  EXPECT_STREQ(String("   foo  ").trimStart().data(), L"foo  ");
+}
+
+TEST(jscppString, rangeFor) {
+  String str = "123";
+  size_t index = 0;
+  for (const auto& i : str) {
+    EXPECT_EQ(i, str[index]);
+    index++;
+  }
+}
+
 /* int main (int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
-} */
-
-/* int main () {
-  std::wstring r = fromUtf8("\x7a\xc3\x9f\xe6\xb0\xb4\xf0\x9f\x8d\x8c");
-  std::string u = toUtf8(r);
-  // std::wstring r = fromUtf8(u8"z\u00df\u6c34\U0001f34c");
-#ifdef _WIN32
-  // system("chcp 65001");
-#endif
-  size_t len = r.length();
-  for (size_t i = 0; i < len; i++) {
-    std::cout << (unsigned int)r[i] << ", ";
-  }
-  std::cout << std::endl;
-
-  len = u.length();
-  for (size_t i = 0; i < len; i++) {
-    std::cout << (int)u[i] << ", ";
-  }
-  std::cout << std::endl;
-  std::cout << u << std::endl;
-
-  String str = 413.8;
-  std::cout << str.padStart(15, "998") << "666" << std::endl;
-
-  String str2 = L"   啊aB被aBqqqaB我我我aB     ";
-  std::cout << str2.toUpperCase() << std::endl;
-  std::cout << str2.toLowerCase() << std::endl;
-
-  auto a = str2.trim();
-  auto b = str2.trimStart();
-  auto c = str2.trimEnd();
-  std::cout << a << std::endl;
-  std::cout << b << std::endl;
-  std::cout << c << std::endl;
-  std::cout << str2 << std::endl;
-
-  String v = "啊啊啊";
-  std::cout << v << std::endl;
-  return 0;
 } */

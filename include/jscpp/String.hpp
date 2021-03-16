@@ -73,6 +73,18 @@ public:
   String(double n): _str(std::to_wstring(n)) { _trimZero(); }
   String(long double n): _str(std::to_wstring(n)) { _trimZero(); }
 
+  using iterator = std::wstring::iterator;
+  using const_iterator = std::wstring::const_iterator;
+
+  iterator begin() noexcept { return _str.begin(); }
+  const_iterator cbegin() const noexcept { return _str.cbegin(); }
+  std::reverse_iterator<iterator> rbegin() noexcept { return _str.rbegin(); }
+  std::reverse_iterator<const_iterator> crbegin() const noexcept { return _str.crbegin(); }
+  iterator end() noexcept { return _str.end(); }
+  const_iterator cend() const noexcept { return _str.cend(); }
+  std::reverse_iterator<iterator> rend() noexcept { return _str.rend(); }
+  std::reverse_iterator<const_iterator> crend() const noexcept { return _str.crend(); }
+
   size_t length() const noexcept {
     return _str.length();
   }
@@ -311,6 +323,12 @@ public:
   }
   String trimStart() const {
     return this->replace(std::wregex(L"^[\\s\\uFEFF\\xA0]+"), "");
+  }
+  String trimRight() const {
+    return this->trimEnd();
+  }
+  String trimLeft() const {
+    return this->trimStart();
   }
 
   int compare(const String& s) const noexcept {
