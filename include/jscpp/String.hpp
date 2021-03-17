@@ -40,6 +40,7 @@ public:
   String(const std::string& str) noexcept;
   String(const wchar_t* wstr) noexcept;
   String(const std::wstring& wstr) noexcept;
+  String(bool b);
   String(int n);
   String(unsigned int n);
   String(long n);
@@ -147,6 +148,7 @@ JSCPP_API String operator+(const String& l, char r);
 JSCPP_API String operator+(const String& l, const wchar_t* r);
 JSCPP_API String operator+(const String& l, wchar_t r);
 
+JSCPP_API String operator+(const String& l, bool r);
 JSCPP_API String operator+(const String& l, int r);
 JSCPP_API String operator+(const String& l, unsigned int r);
 JSCPP_API String operator+(const String& l, long r);
@@ -157,6 +159,7 @@ JSCPP_API String operator+(const String& l, float r);
 JSCPP_API String operator+(const String& l, double r);
 JSCPP_API String operator+(const String& l, long double r);
 
+JSCPP_API String operator+(bool l, const String& r);
 JSCPP_API String operator+(int l, const String& r);
 JSCPP_API String operator+(unsigned int l, const String& r);
 JSCPP_API String operator+(long l, const String& r);

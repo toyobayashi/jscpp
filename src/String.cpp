@@ -69,6 +69,7 @@ String::String(const char* str) noexcept : _str(::js::wstr(str)) {}
 String::String(const std::string& str) noexcept : _str(::js::wstr(str)) {}
 String::String(const wchar_t* wstr) noexcept : _str(wstr) {}
 String::String(const std::wstring& wstr) noexcept : _str(wstr) {}
+String::String(bool b): _str(b ? L"true" : L"false") {}
 String::String(int n): _str(std::to_wstring(n)) {}
 String::String(unsigned int n): _str(std::to_wstring(n)) {}
 String::String(long n): _str(std::to_wstring(n)) {}
@@ -425,6 +426,7 @@ String operator+(const String& l, wchar_t r) {
   return l.concat(r);
 }
 
+String operator+(const String& l, bool r) { return l.concat(r); }
 String operator+(const String& l, int r) { return l.concat(r); }
 String operator+(const String& l, unsigned int r) { return l.concat(r); }
 String operator+(const String& l, long r) { return l.concat(r); }
@@ -435,6 +437,7 @@ String operator+(const String& l, float r) { return l.concat(r); }
 String operator+(const String& l, double r) { return l.concat(r); }
 String operator+(const String& l, long double r) { return l.concat(r); }
 
+String operator+(bool l, const String& r) { return String(l).concat(r); }
 String operator+(int l, const String& r) { return String(l).concat(r); }
 String operator+(unsigned int l, const String& r) { return String(l).concat(r); }
 String operator+(long l, const String& r) { return String(l).concat(r); }

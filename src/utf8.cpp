@@ -42,6 +42,7 @@ std::wstring fromUtf8(const std::string& str) {
   }
 
   size_t len = std::mbstowcs(nullptr, str.c_str(), 0);
+  if (len == (size_t)-1) return L"";
   std::wstring res;
   res.resize(len);
   std::mbstowcs(&res[0], str.c_str(), len + 1);
@@ -62,11 +63,12 @@ std::wstring fromAcp(const std::string& str) {
   MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, &res[0], len);
   return res;
 #else
-  size_t len = std::mbstowcs(nullptr, str.c_str(), 0);
-  std::wstring res;
-  res.resize(len);
-  std::mbstowcs(&res[0], str.c_str(), len + 1);
-  return res;
+  // size_t len = std::mbstowcs(nullptr, str.c_str(), 0);
+  // std::wstring res;
+  // res.resize(len);
+  // std::mbstowcs(&res[0], str.c_str(), len + 1);
+  // return res;
+  return fromUtf8(str);
 #endif
 }
 
@@ -88,6 +90,7 @@ std::string toUtf8(const std::wstring& wstr) {
   }
 
   size_t len = std::wcstombs(nullptr, wstr.c_str(), 0);
+  if (len == (size_t)-1) return "";
   std::string res;
   res.resize(len);
   std::wcstombs(&res[0], wstr.c_str(), len + 1);
@@ -108,11 +111,12 @@ std::string toAcp(const std::wstring& wstr) {
   WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, &res[0], len, nullptr, nullptr);
   return res;
 #else
-  size_t len = std::wcstombs(nullptr, wstr.c_str(), 0);
-  std::string res;
-  res.resize(len);
-  std::wcstombs(&res[0], wstr.c_str(), len + 1);
-  return res;
+  // size_t len = std::wcstombs(nullptr, wstr.c_str(), 0);
+  // std::string res;
+  // res.resize(len);
+  // std::wcstombs(&res[0], wstr.c_str(), len + 1);
+  // return res;
+  return toUtf8(wstr);
 #endif
 }
 
