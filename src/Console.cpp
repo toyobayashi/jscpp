@@ -78,7 +78,7 @@ void Console::clear() {
 #endif
 }
 
-unsigned short Console::get_terminal_width() const {
+unsigned short Console::getTerminalWidth() const {
 #ifdef _WIN32
   CONSOLE_SCREEN_BUFFER_INFO bInfo;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bInfo);
@@ -90,7 +90,7 @@ unsigned short Console::get_terminal_width() const {
 #endif
 }
 
-void Console::clear_line(short lineNumber) {
+void Console::clearLine(short lineNumber) {
 #ifdef _WIN32
   HANDLE _consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -105,7 +105,7 @@ void Console::clear_line(short lineNumber) {
   if (!FillConsoleOutputAttribute(_consoleHandle, csbi.wAttributes, size, targetFirstCellPosition, &cCharsWritten)) return;
   SetConsoleCursorPosition(_consoleHandle, targetFirstCellPosition);
 #else
-  unsigned short w = get_terminal_width() - 1;
+  unsigned short w = getTerminalWidth() - 1;
   char* b = new char[w + 1];
   memset(b, (int)' ', w);
   *(b + w) = '\0';

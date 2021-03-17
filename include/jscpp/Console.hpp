@@ -88,7 +88,7 @@ private:
   template <typename T>
   static std::string _format(const T& arg) {
     std::ostringstream oss;
-    oss << arg;
+    oss << String(arg);
     return oss.str();
   }
 
@@ -184,9 +184,9 @@ public:
     _err.flush();
 #endif
   }
-  unsigned short get_terminal_width() const;
+  unsigned short getTerminalWidth() const;
   void clear();
-  void clear_line(short lineNumber = 0);
+  void clearLine(short lineNumber = 0);
 };
 
 extern JSCPP_API Console console;

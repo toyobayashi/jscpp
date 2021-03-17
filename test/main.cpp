@@ -222,6 +222,17 @@ TEST(jscppProcess, output) {
   console.error("platform: %s", process.platform.str().c_str());
 }
 
+TEST(jscppConsole, output) {
+  console.log(true);
+  console.log(false);
+  console.log(1);
+  console.log(3.14);
+  console.log("const char*");
+  console.log(L"类型 const wchar_t*");
+  console.write("const char*, ");
+  console.write(L"类型 const wchar_t*\n");
+}
+
 /* int main (int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
