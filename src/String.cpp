@@ -103,6 +103,9 @@ std::wstring String::wstr() const noexcept {
 std::string String::str() const noexcept {
   return JSCPP_STR(_str);
 }
+std::string String::toString() const noexcept {
+  return JSCPP_STR(_str);
+}
 
 const wchar_t* String::data() const noexcept {
   return _str.data();

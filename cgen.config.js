@@ -1,7 +1,7 @@
 module.exports = function (options) {
   return {
     project: 'jscpp',
-    dependencies: {
+    dependencies: options.NOTEST ? {} : {
       './deps/googletest': {}
     },
     targets: [
@@ -14,20 +14,20 @@ module.exports = function (options) {
         ...(options.DLL ? { defines: ['JSCPP_BUILD_DLL'] } : {}),
         publicIncludePaths: ['include'],
         windows: {
-          compileOptions: ['/wd4251']
+          publicCompileOptions: ['/wd4251']
         }
       },
-      {
+      ...(options.NOTEST ? [] : [{
         name: 'test',
         type: 'exe',
         sources: [
           './test/main.cpp'
         ],
-        // ...(options.DLL ? { defines: ['JSCPP_IMPORT_DLL'] } : {}),
+        ...(options.DLL ? { defines: ['JSCPP_IMPORT_DLL'] } : {}),
         // compileOptions: ['/execution-charset:utf-8']
         ...(options.DLL ? { libs: ['jscpp#', 'gtest#', 'gtest_main#'] } : { libs: ['jscpp!', 'gtest!', 'gtest_main!'] }),
         staticVCRuntime: !options.DLL
-      }
+      }])
     ]
   }
-} 
+}

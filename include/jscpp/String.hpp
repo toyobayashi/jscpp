@@ -69,6 +69,7 @@ public:
   std::wstring wstr() const noexcept;
 
   std::string str() const noexcept;
+  std::string toString() const noexcept;
 
   const wchar_t* data() const noexcept;
 
