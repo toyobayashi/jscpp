@@ -63,10 +63,10 @@ void String::_trimZero() {
   _str.resize(len - c);
 }
 
-String::String(char c) noexcept: _str(JSCPP_WSTR({ c })) {}
+String::String(char c) noexcept: _str(::js::wstr({ c })) {}
 String::String(wchar_t c) noexcept: _str({ c }) {}
-String::String(const char* str) noexcept : _str(JSCPP_WSTR(str)) {}
-String::String(const std::string& str) noexcept : _str(JSCPP_WSTR(str)) {}
+String::String(const char* str) noexcept : _str(::js::wstr(str)) {}
+String::String(const std::string& str) noexcept : _str(::js::wstr(str)) {}
 String::String(const wchar_t* wstr) noexcept : _str(wstr) {}
 String::String(const std::wstring& wstr) noexcept : _str(wstr) {}
 String::String(int n): _str(std::to_wstring(n)) {}
@@ -101,10 +101,10 @@ std::wstring String::wstr() const noexcept {
 }
 
 std::string String::str() const noexcept {
-  return JSCPP_STR(_str);
+  return ::js::str(_str);
 }
 std::string String::toString() const noexcept {
-  return JSCPP_STR(_str);
+  return ::js::str(_str);
 }
 
 const wchar_t* String::data() const noexcept {
@@ -124,7 +124,7 @@ String& String::operator+=(const String& str) {
 }
 
 std::ostream& operator<<(std::ostream& out, const String& str) {
-  out << JSCPP_STR(str._str);
+  out << ::js::str(str._str);
   return out;
 }
 
