@@ -1,6 +1,7 @@
 // #include <iostream>
 #include "gtest/gtest.h"
 // #define JSCPP_FORCE_UTF8
+#include "jscpp/utf8.hpp"
 #include "jscpp/Process.hpp"
 // #include <cstdlib>
 

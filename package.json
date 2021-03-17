@@ -9,6 +9,8 @@
     "clean": "cgen clean",
     "rebuild": "cgen rebuild -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF",
     "rebuild:debug": "cgen rebuild --debug -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF",
+    "rebuild:dll": "cgen rebuild -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF -sDLL",
+    "rebuild:dll:debug": "cgen rebuild --debug -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF -sDLL",
     "build:wasm": "cgen build -B test/build",
     "rebuild:wasm": "cgen rebuild -e -CBUILD_GMOCK=OFF -CINSTALL_GTEST=OFF -B test/build",
     "clean:wasm": "cgen clean -B test/build"
