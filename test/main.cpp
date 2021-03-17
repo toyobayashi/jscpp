@@ -231,6 +231,7 @@ TEST(jscppConsole, output) {
   console.log(L"类型 const wchar_t*");
   console.write("const char*, ");
   console.write(L"类型 const wchar_t*\n");
+  console.log("cwd: %s", process.cwd().str().c_str());
 }
 
 /* int main (int argc, char** argv) {
