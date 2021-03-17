@@ -27,6 +27,10 @@
 #include <map>
 #include <iostream>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/val.h>
+#endif
+
 #include "String.hpp"
 
 namespace js {
@@ -132,11 +136,13 @@ public:
 
   template <typename T, typename... Args>
   void info(const T& arg, Args... args) {
-#ifdef _WIN32
+#if defined(_WIN32)
     HANDLE hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
     WORD original = Console::_setConsoleTextAttribute(hconsole, COLOR_GREEN_BRIGHT);
     log(arg, args...);
     Console::_setConsoleTextAttribute(hconsole, original);
+#elif defined(__EMSCRIPTEN__)
+    log(arg, args...);
 #else
     _out << COLOR_GREEN_BRIGHT;
     log(arg, args...);
@@ -147,11 +153,13 @@ public:
 
   template <typename T, typename... Args>
   void warn(const T& arg, Args... args) {
-#ifdef _WIN32
+#if defined(_WIN32)
     HANDLE hconsole = GetStdHandle(STD_ERROR_HANDLE);
     WORD original = Console::_setConsoleTextAttribute(hconsole, COLOR_YELLOW_BRIGHT);
     _logerror(arg, args...);
     Console::_setConsoleTextAttribute(hconsole, original);
+#elif defined(__EMSCRIPTEN__)
+    _logerror(arg, args...);
 #else
     _err << COLOR_YELLOW_BRIGHT;
     _logerror(arg, args...);
@@ -162,11 +170,13 @@ public:
 
   template <typename T, typename... Args>
   void error(const T& arg, Args... args) {
-#ifdef _WIN32
+#if defined(_WIN32)
     HANDLE hconsole = GetStdHandle(STD_ERROR_HANDLE);
     WORD original = Console::_setConsoleTextAttribute(hconsole, COLOR_RED_BRIGHT);
     _logerror(arg, args...);
     Console::_setConsoleTextAttribute(hconsole, original);
+#elif defined(__EMSCRIPTEN__)
+    _logerror(arg, args...);
 #else
     _err << COLOR_RED_BRIGHT;
     _logerror(arg, args...);
