@@ -3,6 +3,7 @@
 // #define JSCPP_FORCE_UTF8
 #include "jscpp/utf8.hpp"
 #include "jscpp/Process.hpp"
+#include "jscpp/Console.hpp"
 // #include <cstdlib>
 
 using namespace js;
@@ -215,10 +216,10 @@ TEST(jscppString, rangeFor) {
 
 TEST(jscppProcess, output) {
   for (const auto& p : process.env) {
-    std::cout << p.first.str() << ": " << p.second.str() << std::endl;
+    console.info(L"环境变量：%s = %s", p.first.str().c_str(), p.second.str().c_str());
   }
-  std::cout << "pid: " << process.pid << std::endl;
-  std::cout << "platform: " << process.platform << std::endl;
+  console.warn("pid: %d", process.pid);
+  console.error("platform: %s", process.platform.str().c_str());
 }
 
 /* int main (int argc, char** argv) {
