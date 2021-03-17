@@ -27,10 +27,6 @@
 #include <map>
 #include <iostream>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/val.h>
-#endif
-
 #include "String.hpp"
 
 namespace js {
