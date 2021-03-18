@@ -109,7 +109,7 @@ private:
   }
 
   template <typename... Args>
-  void _logerror(const String& format, Args... args) {
+  void _logerror(const String& format, const Args&... args) {
     String f = format + "\n";
     fprintf(stderr, f.str().c_str(), args...);
   }
@@ -128,7 +128,7 @@ public:
   Console& operator=(const Console&) = delete;
 
   template <typename... Args>
-  void write(const String& format, Args... args) {
+  void write(const String& format, const Args&... args) {
     printf(format.str().c_str(), args...);
     _out.flush();
   }
@@ -140,7 +140,7 @@ public:
   }
 
   template <typename... Args>
-  void log(const String& format, Args... args) {
+  void log(const String& format, const Args&... args) {
     String f = format + "\n";
     printf(f.str().c_str(), args...);
   }
@@ -151,7 +151,7 @@ public:
   }
 
   template <typename T, typename... Args>
-  void info(const T& arg, Args... args) {
+  void info(const T& arg, const Args&... args) {
 #if defined(_WIN32)
     HANDLE hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
     WORD original = Console::_setConsoleTextAttribute(hconsole, COLOR_GREEN_BRIGHT);
@@ -168,7 +168,7 @@ public:
   }
 
   template <typename T, typename... Args>
-  void warn(const T& arg, Args... args) {
+  void warn(const T& arg, const Args&... args) {
 #if defined(_WIN32)
     HANDLE hconsole = GetStdHandle(STD_ERROR_HANDLE);
     WORD original = Console::_setConsoleTextAttribute(hconsole, COLOR_YELLOW_BRIGHT);
@@ -185,7 +185,7 @@ public:
   }
 
   template <typename T, typename... Args>
-  void error(const T& arg, Args... args) {
+  void error(const T& arg, const Args&... args) {
 #if defined(_WIN32)
     HANDLE hconsole = GetStdHandle(STD_ERROR_HANDLE);
     WORD original = Console::_setConsoleTextAttribute(hconsole, COLOR_RED_BRIGHT);

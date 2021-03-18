@@ -20,7 +20,7 @@ namespace win32 {
   JSCPP_API String resolve(const String& arg1 = L"", const String& arg2 = L"");
 
   template <typename... Args>
-  inline String resolve(const String& arg1, const String& arg2, Args... args) {
+  inline String resolve(const String& arg1, const String& arg2, const Args&... args) {
     String tmp = win32::resolve(arg1, arg2);
     return win32::resolve(tmp, args...);
   }
@@ -31,7 +31,7 @@ namespace win32 {
   JSCPP_API String join(const String& arg1, const String& arg2);
 
   template <typename... Args>
-  inline String join(const String& arg1, const String& arg2, Args... args) {
+  inline String join(const String& arg1, const String& arg2, const Args&... args) {
     String tmp = win32::join(arg1, arg2);
     return win32::join(tmp, args...);
   }
@@ -42,7 +42,7 @@ namespace posix {
   JSCPP_API String resolve(const String& arg1 = L"", const String& arg2 = L"");
 
   template <typename... Args>
-  inline String resolve(const String& arg1, const String& arg2, Args... args) {
+  inline String resolve(const String& arg1, const String& arg2, const Args&... args) {
     String tmp = posix::resolve(arg1, arg2);
     return posix::resolve(tmp, args...);
   }
@@ -53,7 +53,7 @@ namespace posix {
   JSCPP_API String join(const String& arg1, const String& arg2);
 
   template <typename... Args>
-  inline String join(const String& arg1, const String& arg2, Args... args) {
+  inline String join(const String& arg1, const String& arg2, const Args&... args) {
     String tmp = posix::join(arg1, arg2);
     return posix::join(tmp, args...);
   }
@@ -64,14 +64,14 @@ namespace posix {
 inline bool isAbsolute(const String& path) { return win32::isAbsolute(path); }
 
 template <typename... Args>
-inline String resolve(Args... args) {
+inline String resolve(const Args&... args) {
   return win32::resolve(args...);
 }
 
 inline String normalize(const String& path) { return win32::normalize(path); }
 
 template <typename... Args>
-inline String join(Args... args) {
+inline String join(const Args&... args) {
   return win32::join(args...);
 }
 
@@ -80,14 +80,14 @@ inline String join(Args... args) {
 inline bool isAbsolute(const String& path) { return posix::isAbsolute(path); }
 
 template <typename... Args>
-inline String resolve(Args... args) {
+inline String resolve(const Args&... args) {
   return posix::resolve(args...);
 }
 
 inline String normalize(const String& path) { return posix::normalize(path); }
 
 template <typename... Args>
-inline String join(Args... args) {
+inline String join(const Args&... args) {
   return posix::join(args...);
 }
 

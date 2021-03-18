@@ -20,7 +20,7 @@ public:
   static String fromCharCode(const std::vector<uint32_t>& codes);
 
   template <typename... Args>
-  static String fromCharCode(uint32_t code, Args... args) {
+  static String fromCharCode(uint32_t code, const Args&... args) {
     String tmp = (wchar_t)(uint16_t)(code);
     return tmp + fromCharCode(args...);
   }
@@ -91,7 +91,7 @@ public:
   String concat(const String& s) const;
 
   template <typename... Args>
-  String concat(const String& s, Args... args) const {
+  String concat(const String& s, const Args&... args) const {
     String tmp = this->concat(s);
     return tmp.concat(args...);
   }
