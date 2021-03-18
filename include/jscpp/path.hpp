@@ -24,6 +24,8 @@ namespace win32 {
     String tmp = win32::resolve(arg1, arg2);
     return win32::resolve(tmp, args...);
   }
+
+  JSCPP_API String normalize(const String&);
 }
 
 namespace posix {
@@ -35,6 +37,8 @@ namespace posix {
     String tmp = posix::resolve(arg1, arg2);
     return posix::resolve(tmp, args...);
   }
+
+  JSCPP_API String normalize(const String&);
 }
 
 #ifdef _WIN32
@@ -48,6 +52,8 @@ inline String resolve(const String& arg1, const String& arg2, Args... args) {
   return resolve(tmp, args...);
 }
 
+inline String normalize(const String& path) { return win32::normalize(path); }
+
 #else
 
 inline bool isAbsolute(const String& path) { return posix::isAbsolute(path); }
@@ -58,6 +64,8 @@ inline String resolve(const String& arg1, const String& arg2, Args... args) {
   String tmp = resolve(arg1, arg2);
   return resolve(tmp, args...);
 }
+
+inline String normalize(const String& path) { return posix::normalize(path); }
 
 #endif
 

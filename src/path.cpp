@@ -1,6 +1,8 @@
 #include "jscpp/path.hpp"
 #include "jscpp/Process.hpp"
 
+#include <memory>
+
 namespace js {
 
 namespace path {
@@ -298,7 +300,7 @@ String resolve(const String& arg1, const String& arg2) {
   // fails)
 
   // Normalize the tail path
-  resolvedTail = normalizeString(resolvedTail, !resolvedAbsolute, '\\',
+  resolvedTail = normalizeString(resolvedTail, !resolvedAbsolute, L"\\",
                                   isPathSeparator);
 
   if (resolvedAbsolute) {
@@ -311,8 +313,95 @@ String resolve(const String& arg1, const String& arg2) {
   return L".";
 }
 
+String normalize(const String& p) {
+  String path = p;
+  size_t len = path.length();
+  if (len == 0)
+    return L".";
+  int rootEnd = 0;
+  std::unique_ptr<String> device;
+
+  bool isAbsolute = false;
+  const uint16_t code = path.charCodeAt(0);
+
+  // Try to match a root
+  if (len == 1) {
+    // `path` contains just a single char, exit early to avoid
+    // unnecessary work
+    return isPosixPathSeparator(code) ? L"\\" : path;
+  }
+  if (isPathSeparator(code)) {
+    // Possible UNC root
+
+    // If we started with a separator, we know we at least have an absolute
+    // path of some kind (UNC or otherwise)
+    isAbsolute = true;
+
+    if (isPathSeparator(path.charCodeAt(1))) {
+      // Matched double path separator at beginning
+      int j = 2;
+      int last = j;
+      // Match 1 or more non-path separators
+      while (j < len && !isPathSeparator(path.charCodeAt(j))) {
+        j++;
+      }
+      if (j < len && j != last) {
+        String firstPart = path.slice(last, j);
+        // Matched!
+        last = j;
+        // Match 1 or more path separators
+        while (j < len && isPathSeparator(path.charCodeAt(j))) {
+          j++;
+        }
+        if (j < len && j != last) {
+          // Matched!
+          last = j;
+          // Match 1 or more non-path separators
+          while (j < len && !isPathSeparator(path.charCodeAt(j))) {
+            j++;
+          }
+          if (j == len) {
+            // We matched a UNC root only
+            // Return the normalized version of the UNC root since there
+            // is nothing left to process
+            return String(L"\\\\") + firstPart + L"\\" + path.slice(last) + L"\\";
+          }
+          if (j != last) {
+            // We matched a UNC root with leftovers
+            device.reset(new String(String(L"\\\\") + firstPart + L"\\" + path.slice(last, j)));
+            rootEnd = j;
+          }
+        }
+      }
+    } else {
+      rootEnd = 1;
+    }
+  } else if (isWindowsDeviceRoot(code) && path.charCodeAt(1) == CHAR_COLON) {
+    // Possible device root
+    device.reset(new String(path.slice(0, 2)));
+    rootEnd = 2;
+    if (len > 2 && isPathSeparator(path.charCodeAt(2))) {
+      // Treat separator following drive name as an absolute path
+      // indicator
+      isAbsolute = true;
+      rootEnd = 3;
+    }
+  }
+
+  String tail = rootEnd < len ?
+    normalizeString(path.slice(rootEnd), !isAbsolute, L"\\", isPathSeparator) :
+    L"";
+  if (tail.length() == 0 && !isAbsolute)
+    tail = L".";
+  if (tail.length() > 0 && isPathSeparator(path.charCodeAt(len - 1)))
+    tail += L"\\";
+  if (device == nullptr) {
+    return isAbsolute ? (L"\\" + tail) : tail;
+  }
+  return isAbsolute ? (*device + L"\\" + tail) : (*device + tail);
 }
 
+}
 
 namespace posix {
 
@@ -339,13 +428,36 @@ String resolve(const String& arg1, const String& arg2) {
   // handle relative paths to be safe (might happen when process.cwd() fails)
 
   // Normalize the path
-  resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, '/',
+  resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, L"/",
                                   isPosixPathSeparator);
 
   if (resolvedAbsolute) {
     return L"/" + resolvedPath;
   }
   return resolvedPath.length() > 0 ? resolvedPath : L".";
+}
+
+String normalize(const String& p) {
+  String path = p;
+  if (path.length() == 0)
+    return L".";
+
+  bool isAbsolute = path.charCodeAt(0) == CHAR_FORWARD_SLASH;
+  bool trailingSeparator =
+    path.charCodeAt(path.length() - 1) == CHAR_FORWARD_SLASH;
+
+  // Normalize the path
+  path = normalizeString(path, !isAbsolute, L"/", isPosixPathSeparator);
+
+  if (path.length() == 0) {
+    if (isAbsolute)
+      return L"/";
+    return trailingSeparator ? L"./" : L".";
+  }
+  if (trailingSeparator)
+    path += L"/";
+
+  return isAbsolute ? (L"/" + path) : path;
 }
 
 }

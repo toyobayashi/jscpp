@@ -33,3 +33,8 @@ TEST(jscppPath, resolve) {
 
   // EXPECT_EQ(path::resolve("wwwroot", "static_files/png/", "../gif/image.gif"), path::join(toyo::process::cwd(), "wwwroot/static_files/gif/image.gif"));
 }
+
+TEST(jscppPath, normalize) {
+  EXPECT_EQ(path::posix::normalize("/foo/bar//baz/asdf/quux/.."), L"/foo/bar/baz/asdf");
+  EXPECT_EQ(path::win32::normalize("C:////temp\\\\/\\/\\/foo/bar"), L"C:\\temp\\foo\\bar");
+}
