@@ -180,4 +180,15 @@ JSCPP_API bool operator<(const String& l, const String& r) noexcept;
 
 }
 
+namespace std {
+
+template<>
+struct hash<::js::String> {
+  size_t operator()(const ::js::String& str) const noexcept {
+    return std::hash<std::wstring>{}(str.ref());
+  }
+};
+
+}
+
 #endif

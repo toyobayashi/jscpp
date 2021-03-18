@@ -25,6 +25,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 
 #include "String.hpp"
@@ -44,7 +45,7 @@ private:
     size_t len = arr.size();
     std::ostringstream oss;
     if (len == 0) {
-      oss << "[]";
+      oss << "Vector []";
       return oss.str();
     }
     oss << "[ ";
@@ -63,10 +64,33 @@ private:
     size_t len = strobj.size();
     std::ostringstream oss;
     if (len == 0) {
-      oss << "{}";
+      oss << "Map {}";
       return oss.str();
     }
-    oss << "{\n";
+    oss << "Map {\n";
+    size_t i = 0;
+    for (auto& p : strobj) {
+      oss << std::string("  \"") << p.first << "\": \"" << p.second << "\"";
+      if (i != len - 1) {
+        oss << ",\n";
+      } else {
+        oss << "\n";
+      }
+      i++;
+    }
+    oss << "}";
+    return oss.str();
+  }
+
+  template <typename K, typename V>
+  static std::string _format(const std::unordered_map<K, V>& strobj) {
+    size_t len = strobj.size();
+    std::ostringstream oss;
+    if (len == 0) {
+      oss << "UnorderedMap {}";
+      return oss.str();
+    }
+    oss << "UnorderedMap {\n";
     size_t i = 0;
     for (auto& p : strobj) {
       oss << std::string("  \"") << p.first << "\": \"" << p.second << "\"";

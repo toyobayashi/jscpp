@@ -6,6 +6,8 @@
 #include "jscpp/Error.hpp"
 #include "jscpp/Console.hpp"
 // #include <cstdlib>
+#include <unordered_map>
+#include <map>
 
 using namespace js;
 
@@ -217,6 +219,16 @@ TEST(jscppString, rangeFor) {
     EXPECT_EQ(i, str[index]);
     index++;
   }
+}
+
+TEST(jscppString, map) {
+  String str = "123";
+  std::map<String, String> m;
+  m[str] = str;
+  std::unordered_map<String, String> um;
+  um[str] = str;
+  console.log(m);
+  console.log(um);
 }
 
 TEST(jscppProcess, output) {
