@@ -13,6 +13,7 @@ module.exports = function (options) {
         ],
         ...(options.DLL ? { defines: ['JSCPP_BUILD_DLL'] } : {}),
         publicIncludePaths: ['include'],
+        // publicDefines: ['JSCPP_USE_ERROR=0'],
         windows: {
           publicCompileOptions: ['/wd4251']
         }

@@ -27,4 +27,12 @@
   #endif
 #endif
 
+#ifndef JSCPP_USE_ERROR
+  #ifdef __EMSCRIPTEN__
+    #define JSCPP_USE_ERROR 0
+  #else
+    #define JSCPP_USE_ERROR 1
+  #endif
+#endif
+
 #endif

@@ -1,5 +1,5 @@
 #include "jscpp/utf8.hpp"
-#include "jscpp/String.hpp"
+#include "throw.hpp"
 
 #include <utility>
 
@@ -34,7 +34,7 @@ String String::fromCodePoint(const std::vector<uint32_t>& codes) {
   for (; index != len; ++index) {
     uint32_t codePoint = codes[index];
     if (codePoint >= 0x10FFFF) {
-      return ""; // RangeError
+      throwError(String("Invalid code point: ") + codePoint);
     }
 
     if (codePoint <= 0xFFFF) {

@@ -3,6 +3,7 @@
 // #define JSCPP_FORCE_UTF8
 #include "jscpp/utf8.hpp"
 #include "jscpp/Process.hpp"
+#include "jscpp/Error.hpp"
 #include "jscpp/Console.hpp"
 // #include <cstdlib>
 
@@ -73,7 +74,11 @@ TEST(jscppString, fromCodePoint) {
   EXPECT_STREQ(String::fromCodePoint(0x2F804).data(), L"\xD87E\xDC04");
   EXPECT_STREQ(String::fromCodePoint(194564).data(), L"\xD87E\xDC04");
   EXPECT_STREQ(String::fromCodePoint({ 0x1D306, 0x61, 0x1D307 }).data(), L"\xD834\xDF06\x61\xD834\xDF07");
-  EXPECT_STREQ(String::fromCodePoint(8888888).data(), L"");
+#if JSCPP_USE_ERROR
+  EXPECT_THROW(String::fromCodePoint(8888888), Error);
+#else
+  EXPECT_DEATH_IF_SUPPORTED(String::fromCodePoint(8888888), "Invalid code point");
+#endif
 }
 
 TEST(jscppString, concat) {
