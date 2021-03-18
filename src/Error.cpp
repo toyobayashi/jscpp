@@ -1,4 +1,6 @@
 #include "throw.hpp"
+#include "jscpp/Error.hpp"
+#include "jscpp/String.hpp"
 
 #if !JSCPP_USE_ERROR
 #include <iostream>

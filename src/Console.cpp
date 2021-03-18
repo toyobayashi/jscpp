@@ -2,6 +2,12 @@
 
 #include <cstring>
 
+#ifndef _WIN32
+#include <unistd.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#endif
+
 namespace js {
 
 #ifdef _WIN32

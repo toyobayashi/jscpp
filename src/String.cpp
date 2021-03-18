@@ -1,4 +1,5 @@
 #include "jscpp/utf8.hpp"
+#include "jscpp/String.hpp"
 #include "throw.hpp"
 
 #include <utility>

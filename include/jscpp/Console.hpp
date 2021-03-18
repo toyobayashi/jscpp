@@ -15,10 +15,6 @@
 #define COLOR_YELLOW_BRIGHT ("\x1b[33;1m")
 #define COLOR_GREEN_BRIGHT ("\x1b[32;1m")
 #define COLOR_RESET ("\x1b[0m")
-
-#include <unistd.h>
-#include <termios.h>
-#include <sys/ioctl.h>
 #endif
 
 #include <string>
