@@ -1,4 +1,5 @@
 #include "jscpp/path.hpp"
+#include "jscpp/Process.hpp"
 
 namespace js {
 
@@ -138,6 +139,15 @@ String normalizeString(const String& path, bool allowAboveRoot, const String& se
   return res;
 }
 
+String _format(const String& sep, const ParsedPath& pathObject) {
+  String dir = pathObject.dir.length() != 0 ? pathObject.dir : pathObject.root;
+  String base = pathObject.base.length() != 0 ? pathObject.base : (pathObject.name + pathObject.ext);
+  if (dir.length() == 0) {
+    return base;
+  }
+  return dir == pathObject.root ? (dir + base) : (dir + sep + base);
+}
+
 }
 
 namespace win32 {
@@ -156,12 +166,187 @@ bool isAbsolute(const String& path) {
     isPathSeparator(path.charCodeAt(2)));
 }
 
+String resolve(const String& arg1, const String& arg2) {
+  std::vector<String> args = { arg1, arg2 };
+  String resolvedDevice;
+  String resolvedTail;
+  bool resolvedAbsolute = false;
+
+  for (int i = (int)args.size() - 1; i >= -1; i--) {
+    String path;
+    if (i >= 0) {
+      path = args[i];
+
+      // Skip empty entries
+      if (path.length() == 0) {
+        continue;
+      }
+    } else if (resolvedDevice.length() == 0) {
+      path = process.cwd();
+    } else {
+      // Windows has the concept of drive-specific current working
+      // directories. If we've resolved a drive letter but not yet an
+      // absolute path, get cwd for that drive, or the process cwd if
+      // the drive cwd is not available. We're sure the device is not
+      // a UNC path at this points, because UNC paths are always absolute.
+      String tmp = String(L"=") + resolvedDevice;
+      String env;
+      if (process.env.find(tmp) != process.env.end()) {
+        env = process.env.at(tmp);
+      }
+      path = env.length() != 0 ? env : process.cwd();
+
+      // Verify that a cwd was found and that it actually points
+      // to our drive. If not, default to the drive's root.
+      if (
+          (!(path.slice(0, 2).toLowerCase() == resolvedDevice.toLowerCase()) &&
+          path.charCodeAt(2) == CHAR_BACKWARD_SLASH)) {
+        path = resolvedDevice + L"\\";
+      }
+    }
+
+    const size_t len = path.length();
+    int rootEnd = 0;
+    String device;
+    bool isAbsolute = false;
+    const uint16_t code = path.charCodeAt(0);
+
+    // Try to match a root
+    if (len == 1) {
+      if (isPathSeparator(code)) {
+        // `path` contains just a path separator
+        rootEnd = 1;
+        isAbsolute = true;
+      }
+    } else if (isPathSeparator(code)) {
+      // Possible UNC root
+
+      // If we started with a separator, we know we at least have an
+      // absolute path of some kind (UNC or otherwise)
+      isAbsolute = true;
+
+      if (isPathSeparator(path.charCodeAt(1))) {
+        // Matched double path separator at beginning
+        int j = 2;
+        int last = j;
+        // Match 1 or more non-path separators
+        while (j < len && !isPathSeparator(path.charCodeAt(j))) {
+          j++;
+        }
+        if (j < len && j != last) {
+          const String firstPart = path.slice(last, j);
+          // Matched!
+          last = j;
+          // Match 1 or more path separators
+          while (j < len && isPathSeparator(path.charCodeAt(j))) {
+            j++;
+          }
+          if (j < len && j != last) {
+            // Matched!
+            last = j;
+            // Match 1 or more non-path separators
+            while (j < len && !isPathSeparator(path.charCodeAt(j))) {
+              j++;
+            }
+            if (j == len || j != last) {
+              // We matched a UNC root
+              device = String(L"\\\\") + firstPart + L"\\" + path.slice(last, j);
+              rootEnd = j;
+            }
+          }
+        }
+      } else {
+        rootEnd = 1;
+      }
+    } else if (isWindowsDeviceRoot(code) &&
+                path.charCodeAt(1) == CHAR_COLON) {
+      // Possible device root
+      device = path.slice(0, 2);
+      rootEnd = 2;
+      if (len > 2 && isPathSeparator(path.charCodeAt(2))) {
+        // Treat separator following drive name as an absolute path
+        // indicator
+        isAbsolute = true;
+        rootEnd = 3;
+      }
+    }
+
+    if (device.length() > 0) {
+      if (resolvedDevice.length() > 0) {
+        if (!(device.toLowerCase() == resolvedDevice.toLowerCase()))
+          // This path points to another device so it is not applicable
+          continue;
+      } else {
+        resolvedDevice = device;
+      }
+    }
+
+    if (resolvedAbsolute) {
+      if (resolvedDevice.length() > 0)
+        break;
+    } else {
+      resolvedTail = path.slice(rootEnd) + L"\\" + resolvedTail;
+      resolvedAbsolute = isAbsolute;
+      if (isAbsolute && resolvedDevice.length() > 0) {
+        break;
+      }
+    }
+  }
+
+  // At this point the path should be resolved to a full absolute path,
+  // but handle relative paths to be safe (might happen when process.cwd()
+  // fails)
+
+  // Normalize the tail path
+  resolvedTail = normalizeString(resolvedTail, !resolvedAbsolute, '\\',
+                                  isPathSeparator);
+
+  if (resolvedAbsolute) {
+    return resolvedDevice + L"\\" + resolvedTail;
+  }
+  String r = resolvedDevice + resolvedTail;
+  if (r.length() > 0) {
+    return r;
+  }
+  return L".";
+}
+
 }
 
 
 namespace posix {
 
 bool isAbsolute(const String& path) { return path.length() > 0 && path.charCodeAt(0) == CHAR_FORWARD_SLASH; }
+
+String resolve(const String& arg1, const String& arg2) {
+  std::vector<String> args = { arg1, arg2 };
+  String resolvedPath;
+  bool resolvedAbsolute = false;
+
+  for (int i = (int)args.size() - 1; i >= -1 && !resolvedAbsolute; i--) {
+    String path = i >= 0 ? args[i] : process.cwd();
+
+    // Skip empty entries
+    if (path.length() == 0) {
+      continue;
+    }
+
+    resolvedPath = path + L"/" + resolvedPath;
+    resolvedAbsolute = path.charCodeAt(0) == CHAR_FORWARD_SLASH;
+  }
+
+  // At this point the path should be resolved to a full absolute path, but
+  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+  // Normalize the path
+  resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, '/',
+                                  isPosixPathSeparator);
+
+  if (resolvedAbsolute) {
+    return L"/" + resolvedPath;
+  }
+  return resolvedPath.length() > 0 ? resolvedPath : L".";
+}
 
 }
 
