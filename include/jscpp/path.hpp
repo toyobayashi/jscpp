@@ -26,6 +26,15 @@ namespace win32 {
   }
 
   JSCPP_API String normalize(const String&);
+  JSCPP_API String join();
+  JSCPP_API String join(const String& arg1);
+  JSCPP_API String join(const String& arg1, const String& arg2);
+
+  template <typename... Args>
+  inline String join(const String& arg1, const String& arg2, Args... args) {
+    String tmp = win32::join(arg1, arg2);
+    return win32::join(tmp, args...);
+  }
 }
 
 namespace posix {
@@ -39,33 +48,48 @@ namespace posix {
   }
 
   JSCPP_API String normalize(const String&);
+  JSCPP_API String join();
+  JSCPP_API String join(const String& arg1);
+  JSCPP_API String join(const String& arg1, const String& arg2);
+
+  template <typename... Args>
+  inline String join(const String& arg1, const String& arg2, Args... args) {
+    String tmp = posix::join(arg1, arg2);
+    return posix::join(tmp, args...);
+  }
 }
 
 #ifdef _WIN32
 
 inline bool isAbsolute(const String& path) { return win32::isAbsolute(path); }
 
-inline String resolve(const String& arg1 = L"", const String& arg2 = L"") { return win32::resolve(arg1, arg2); }
 template <typename... Args>
-inline String resolve(const String& arg1, const String& arg2, Args... args) {
-  String tmp = resolve(arg1, arg2);
-  return resolve(tmp, args...);
+inline String resolve(Args... args) {
+  return win32::resolve(args...);
 }
 
 inline String normalize(const String& path) { return win32::normalize(path); }
+
+template <typename... Args>
+inline String join(Args... args) {
+  return win32::join(args...);
+}
 
 #else
 
 inline bool isAbsolute(const String& path) { return posix::isAbsolute(path); }
 
-inline String resolve(const String& arg1 = L"", const String& arg2 = L"") { return posix::resolve(arg1, arg2); }
 template <typename... Args>
-inline String resolve(const String& arg1, const String& arg2, Args... args) {
-  String tmp = resolve(arg1, arg2);
-  return resolve(tmp, args...);
+inline String resolve(Args... args) {
+  return posix::resolve(args...);
 }
 
 inline String normalize(const String& path) { return posix::normalize(path); }
+
+template <typename... Args>
+inline String join(Args... args) {
+  return posix::join(args...);
+}
 
 #endif
 

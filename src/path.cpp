@@ -401,6 +401,82 @@ String normalize(const String& p) {
   return isAbsolute ? (*device + L"\\" + tail) : (*device + tail);
 }
 
+namespace {
+String win32InternalJoin(const std::vector<String>& args) {
+  std::unique_ptr<String> joined;
+  String firstPart;
+  for (size_t i = 0; i < args.size(); ++i) {
+    const String& arg = args[i];
+    if (arg.length() > 0) {
+      if (joined == nullptr) {
+        firstPart = arg;
+        joined.reset(new String(arg));
+      } else {
+        *joined += (L"\\" + arg);
+      }
+    }
+  }
+
+  if (joined == nullptr)
+    return L".";
+
+  // Make sure that the joined path doesn't start with two slashes, because
+  // normalize() will mistake it for a UNC path then.
+  //
+  // This step is skipped when it is very clear that the user actually
+  // intended to point at a UNC path. This is assumed when the first
+  // non-empty string arguments starts with exactly two slashes followed by
+  // at least one more non-slash character.
+  //
+  // Note that for normalize() to treat a path as a UNC path it needs to
+  // have at least 2 components, so we don't filter for that here.
+  // This means that the user can use join to construct UNC paths from
+  // a server name and a share name; for example:
+  //   path.join('//server', 'share') -> '\\\\server\\share\\')
+  bool needsReplace = true;
+  size_t slashCount = 0;
+  if (isPathSeparator(firstPart.charCodeAt(0))) {
+    ++slashCount;
+    size_t firstLen = firstPart.length();
+    if (firstLen > 1 && isPathSeparator(firstPart.charCodeAt(1))) {
+      ++slashCount;
+      if (firstLen > 2) {
+        if (isPathSeparator(firstPart.charCodeAt(2)))
+          ++slashCount;
+        else {
+          // We matched a UNC path in the first part
+          needsReplace = false;
+        }
+      }
+    }
+  }
+  if (needsReplace) {
+    // Find any more consecutive slashes we need to replace
+    while (slashCount < joined->length() &&
+            isPathSeparator(joined->charCodeAt(slashCount))) {
+      slashCount++;
+    }
+
+    // Replace the slashes if needed
+    if (slashCount >= 2)
+      joined.reset(new String(L"\\" + joined->slice((int)slashCount)));
+  }
+
+  return win32::normalize(*joined);
+}
+}
+
+String join() { return L"."; }
+String join(const String& arg1) {
+  std::vector<String> args = { arg1 };
+  return win32InternalJoin(args);
+}
+String join(const String& arg1, const String& arg2) {
+  std::vector<String> args = { arg1, arg2 };
+  return win32InternalJoin(args);
+}
+
+
 }
 
 namespace posix {
@@ -458,6 +534,35 @@ String normalize(const String& p) {
     path += L"/";
 
   return isAbsolute ? (L"/" + path) : path;
+}
+
+namespace {
+String posixInternalJoin(const std::vector<String>& args) {
+  std::unique_ptr<String> joined;
+  for (size_t i = 0; i < args.size(); ++i) {
+    const String& arg = args[i];
+    if (arg.length() > 0) {
+      if (joined == nullptr) {
+        joined.reset(new String(arg));
+      } else {
+        *joined += (L"/" + arg);
+      }
+    }
+  }
+  if (joined == nullptr)
+    return L".";
+  return posix::normalize(*joined);
+}
+}
+
+String join() { return L"."; }
+String join(const String& arg1) {
+  std::vector<String> args = { arg1 };
+  return posixInternalJoin(args);
+}
+String join(const String& arg1, const String& arg2) {
+  std::vector<String> args = { arg1, arg2 };
+  return posixInternalJoin(args);
 }
 
 }
