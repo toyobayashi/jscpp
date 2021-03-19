@@ -73,3 +73,12 @@ TEST(jscppPath, basename) {
   EXPECT_EQ(path::basename("."), L".");
   EXPECT_EQ(path::basename(".."), L"..");
 }
+
+TEST(jscppPath, extname) {
+  EXPECT_EQ(path::extname("index.html"), L".html");
+  EXPECT_EQ(path::extname("index.coffee.md"), L".md");
+  EXPECT_EQ(path::extname("index."), L".");
+  EXPECT_EQ(path::extname("index"), L"");
+  EXPECT_EQ(path::extname(".index"), L"");
+  EXPECT_EQ(path::extname(".index.md"), L".md");
+}
