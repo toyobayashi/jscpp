@@ -55,7 +55,11 @@ String tmpdir() {
   } else if (env.find("TEMP") != env.end() && env.at("TEMP").length() > 0) {
     path = env.at("TEMP");
   } else {
+#if defined(__ANDROID__)
+    path = L"/data/local/tmp";
+#else
     path = L"/tmp";
+#endif
   }
 
   if (path.length() > 1 && path[path.length() - 1] == L'/') {
