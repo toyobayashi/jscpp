@@ -590,6 +590,35 @@ String relative(const String& f, const String& t) {
   return toOrig.slice(toStart, toEnd);
 }
 
+String toNamespacedPath(const String& path) {
+  // Note: this will *probably* throw somewhere.
+  if (path.length() == 0) {
+    return L"";
+  }
+
+  String resolvedPath = win32::resolve(path);
+
+  if (resolvedPath.length() <= 2)
+    return path;
+
+  if (resolvedPath.charCodeAt(0) == CHAR_BACKWARD_SLASH) {
+    // Possible UNC root
+    if (resolvedPath.charCodeAt(1) == CHAR_BACKWARD_SLASH) {
+      uint16_t code = resolvedPath.charCodeAt(2);
+      if (code != CHAR_QUESTION_MARK && code != CHAR_DOT) {
+        // Matched non-long UNC root, convert the path to a long UNC path
+        return L"\\\\?\\UNC\\" + resolvedPath.slice(2);
+      }
+    }
+  } else if (isWindowsDeviceRoot(resolvedPath.charCodeAt(0)) &&
+              resolvedPath.charCodeAt(1) == CHAR_COLON &&
+              resolvedPath.charCodeAt(2) == CHAR_BACKWARD_SLASH) {
+    // Matched device root, convert the path to a long UNC path
+    return L"\\\\?\\" + resolvedPath;
+  }
+
+  return path;
+}
 
 }
 
@@ -744,6 +773,10 @@ String relative(const String& f, const String& t) {
   // Lastly, append the rest of the destination (`to`) path that comes after
   // the common path parts.
   return out + to.slice(toStart + lastCommonSep);
+}
+
+String toNamespacedPath(const String& path) {
+  return path;
 }
 
 }
