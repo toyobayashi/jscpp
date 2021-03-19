@@ -705,6 +705,87 @@ String dirname(const String& path) {
   return path.slice(0, end);
 }
 
+String basename(const String& path, const String& ext) {
+  int start = 0;
+  int end = -1;
+  bool matchedSlash = true;
+
+  // Check for a drive letter prefix so as not to mistake the following
+  // path separator as an extra separator at the end of the path that can be
+  // disregarded
+  if (path.length() >= 2 &&
+      isWindowsDeviceRoot(path.charCodeAt(0)) &&
+      path.charCodeAt(1) == CHAR_COLON) {
+    start = 2;
+  }
+
+  if (ext.length() > 0 && ext.length() <= path.length()) {
+    if (ext == path)
+      return L"";
+    int extIdx = (int)ext.length() - 1;
+    int firstNonSlashEnd = -1;
+    for (int i = (int)path.length() - 1; i >= start; --i) {
+      uint16_t code = path.charCodeAt(i);
+      if (isPathSeparator(code)) {
+        // If we reached a path separator that was not part of a set of path
+        // separators at the end of the string, stop now
+        if (!matchedSlash) {
+          start = i + 1;
+          break;
+        }
+      } else {
+        if (firstNonSlashEnd == -1) {
+          // We saw the first non-path separator, remember this index in case
+          // we need it if the extension ends up not matching
+          matchedSlash = false;
+          firstNonSlashEnd = i + 1;
+        }
+        if (extIdx >= 0) {
+          // Try to match the explicit extension
+          if (code == ext.charCodeAt(extIdx)) {
+            extIdx--;
+            if (extIdx == -1) {
+              // We matched the extension, so mark this as the end of our path
+              // component
+              end = i;
+            }
+          } else {
+            // Extension does not match, so our result is the entire path
+            // component
+            extIdx = -1;
+            end = firstNonSlashEnd;
+          }
+        }
+      }
+    }
+
+    if (start == end)
+      end = firstNonSlashEnd;
+    else if (end == -1)
+      end = (int)path.length();
+    return path.slice(start, end);
+  }
+  for (int i = (int)path.length() - 1; i >= start; --i) {
+    if (isPathSeparator(path.charCodeAt(i))) {
+      // If we reached a path separator that was not part of a set of path
+      // separators at the end of the string, stop now
+      if (!matchedSlash) {
+        start = i + 1;
+        break;
+      }
+    } else if (end == -1) {
+      // We saw the first non-path separator, mark this as the end of our
+      // path component
+      matchedSlash = false;
+      end = i + 1;
+    }
+  }
+
+  if (end == -1)
+    return L"";
+  return path.slice(start, end);
+}
+
 }
 
 namespace posix {
@@ -887,6 +968,78 @@ String dirname(const String& path) {
   if (hasRoot && end == 1)
     return L"//";
   return path.slice(0, end);
+}
+
+String basename(const String& path, const String& ext) {
+  int start = 0;
+  int end = -1;
+  bool matchedSlash = true;
+
+  if (ext.length() > 0 && ext.length() <= path.length()) {
+    if (ext == path)
+      return L"";
+    int extIdx = (int)ext.length() - 1;
+    int firstNonSlashEnd = -1;
+    for (int i = (int)path.length() - 1; i >= 0; --i) {
+      uint16_t code = path.charCodeAt(i);
+      if (code == CHAR_FORWARD_SLASH) {
+        // If we reached a path separator that was not part of a set of path
+        // separators at the end of the string, stop now
+        if (!matchedSlash) {
+          start = i + 1;
+          break;
+        }
+      } else {
+        if (firstNonSlashEnd == -1) {
+          // We saw the first non-path separator, remember this index in case
+          // we need it if the extension ends up not matching
+          matchedSlash = false;
+          firstNonSlashEnd = i + 1;
+        }
+        if (extIdx >= 0) {
+          // Try to match the explicit extension
+          if (code == ext.charCodeAt(extIdx)) {
+            extIdx--;
+            if (extIdx == -1) {
+              // We matched the extension, so mark this as the end of our path
+              // component
+              end = i;
+            }
+          } else {
+            // Extension does not match, so our result is the entire path
+            // component
+            extIdx = -1;
+            end = firstNonSlashEnd;
+          }
+        }
+      }
+    }
+
+    if (start == end)
+      end = firstNonSlashEnd;
+    else if (end == -1)
+      end = (int)path.length();
+    return path.slice(start, end);
+  }
+  for (int i = (int)path.length() - 1; i >= 0; --i) {
+    if (path.charCodeAt(i) == CHAR_FORWARD_SLASH) {
+      // If we reached a path separator that was not part of a set of path
+      // separators at the end of the string, stop now
+      if (!matchedSlash) {
+        start = i + 1;
+        break;
+      }
+    } else if (end == -1) {
+      // We saw the first non-path separator, mark this as the end of our
+      // path component
+      matchedSlash = false;
+      end = i + 1;
+    }
+  }
+
+  if (end == -1)
+    return L"";
+  return path.slice(start, end);
 }
 
 }

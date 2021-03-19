@@ -66,3 +66,10 @@ TEST(jscppPath, dirname) {
   EXPECT_EQ(path::dirname("."), L".");
   EXPECT_EQ(path::dirname(".."), L".");
 }
+
+TEST(jscppPath, basename) {
+  EXPECT_EQ(path::basename("/foo/bar/baz/asdf/quux.html"), L"quux.html");
+  EXPECT_EQ(path::basename("/foo/bar/baz/asdf/quux.html", ".html"), L"quux");
+  EXPECT_EQ(path::basename("."), L".");
+  EXPECT_EQ(path::basename(".."), L"..");
+}
