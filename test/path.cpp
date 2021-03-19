@@ -3,6 +3,7 @@
 #include "jscpp/Process.hpp"
 #include "jscpp/Console.hpp"
 #include "jscpp/os.hpp"
+#include "jscpp/env_paths.hpp"
 
 using namespace js;
 
@@ -140,4 +141,11 @@ TEST(jscppPath, constants) {
   console.log(L"__dirname: " + __dirname);
   console.log(L"临时目录: " + os::tmpdir());
   console.log(L"home: " + os::homedir());
+
+  env_paths::Paths paths = env_paths::create(L"测试");
+  console.log(L"paths.data:" + paths.data);
+  console.log(L"paths.config:" + paths.config);
+  console.log(L"paths.cache:" + paths.cache);
+  console.log(L"paths.log:" + paths.log);
+  console.log(L"paths.temp:" + paths.temp);
 }

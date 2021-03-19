@@ -32,28 +32,34 @@ String tmpdir() {
   String path;
   const std::map<String, String>& env = process.env;
 #ifdef _WIN32
-  if (env.find("TEMP") != env.end() && env.at("TEMP").length() > 0) {
-    path = env.at("TEMP");
-  } else if (env.find("TMP") != env.end() && env.at("TMP").length() > 0) {
-    path = env.at("TMP");
-  } else if (env.find("SystemRoot") != env.end() && env.at("SystemRoot").length() > 0) {
-    path = env.at("SystemRoot") + "\\temp";
-  } else if (env.find("windir") != env.end() && env.at("windir").length() > 0) {
-    path = env.at("windir") + "\\temp";
+  if (env.find(L"TEMP") != env.end() && env.at(L"TEMP").length() > 0) {
+    path = env.at(L"TEMP");
+  } else if (env.find(L"TMP") != env.end() && env.at(L"TMP").length() > 0) {
+    path = env.at(L"TMP");
+  } else if (env.find(L"SystemRoot") != env.end() && env.at(L"SystemRoot").length() > 0) {
+    path = env.at(L"SystemRoot") + "\\temp";
+  } else if (env.find(L"windir") != env.end() && env.at(L"windir").length() > 0) {
+    path = env.at(L"windir") + L"\\temp";
   } else {
-    path = L"C:\\temp";
+    wchar_t tempPath[MAX_PATH + 1] = { 0 };
+    int len = GetTempPathW(MAX_PATH + 1, tempPath);
+    if (len == 0) {
+      path = L"C:\\temp";
+    } else {
+      path = String(tempPath) + L"\\temp";
+    }
   }
 
   if (path.length() > 1 && path[path.length() - 1] == L'\\' && path[path.length() - 2] != L':') {
     path = path.slice(0, -1);
   }
 #else
-  if (env.find("TMPDIR") != env.end() && env.at("TMPDIR").length() > 0) {
-    path = env.at("TMPDIR");
-  } else if (env.find("TMP") != env.end() && env.at("TMP").length() > 0) {
-    path = env.at("TMP");
-  } else if (env.find("TEMP") != env.end() && env.at("TEMP").length() > 0) {
-    path = env.at("TEMP");
+  if (env.find(L"TMPDIR") != env.end() && env.at(L"TMPDIR").length() > 0) {
+    path = env.at(L"TMPDIR");
+  } else if (env.find(L"TMP") != env.end() && env.at(L"TMP").length() > 0) {
+    path = env.at(L"TMP");
+  } else if (env.find(L"TEMP") != env.end() && env.at(L"TEMP").length() > 0) {
+    path = env.at(L"TEMP");
   } else {
 #if defined(__ANDROID__)
     path = L"/data/local/tmp";
@@ -73,8 +79,8 @@ String homedir() {
   const std::map<String, String>& env = process.env;
 #ifdef _WIN32
 
-  if (env.find("USERPROFILE") != env.end()) {
-    return env.at("USERPROFILE");
+  if (env.find(L"USERPROFILE") != env.end()) {
+    return env.at(L"USERPROFILE");
   }
 
   HANDLE token;
@@ -94,8 +100,8 @@ String homedir() {
 
   return path;
 #else
-  if (env.find("HOME") != env.end()) {
-    return env.at("HOME");
+  if (env.find(L"HOME") != env.end()) {
+    return env.at(L"HOME");
   }
 #ifdef __EMSCRIPTEN__
   return L"/";
@@ -109,7 +115,7 @@ String homedir() {
 
   getpwuid_r = dlsym(RTLD_DEFAULT, "getpwuid_r");
   if (getpwuid_r == NULL) {
-    internal::throwError("Can not call getpwuid_r.");
+    internal::throwError(L"Can not call getpwuid_r.");
   }
 #endif
   long initsize = sysconf(_SC_GETPW_R_SIZE_MAX);
@@ -141,7 +147,7 @@ String homedir() {
 
   if (r != 0) {
     free(buf);
-    internal::throwError("getpwuid_r() failed.");
+    internal::throwError(L"getpwuid_r() failed.");
   }
 
   if (result == NULL) {

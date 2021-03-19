@@ -24,9 +24,8 @@ namespace js {
       )) {
         std::wstring msg = (wchar_t*)buf;
         LocalFree(buf);
-        size_t pos = msg.find_last_of(L"\r\n");
-        msg = msg.substr(0, pos - 1);
-        return msg;
+        size_t pos = msg.rfind(L"\r\n");
+        return msg.substr(0, pos - 1);
       } else {
         char buf[10] = { 0 };
         _itoa(GetLastError(), buf, 10);
