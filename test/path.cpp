@@ -82,3 +82,42 @@ TEST(jscppPath, extname) {
   EXPECT_EQ(path::extname(".index"), L"");
   EXPECT_EQ(path::extname(".index.md"), L".md");
 }
+
+TEST(jscppPath, parseAndFormat) {
+  path::ParsedPath p = path::posix::parse("/home/user/dir/file.txt");
+  EXPECT_EQ(p.root, L"/");
+  EXPECT_EQ(p.dir, L"/home/user/dir");
+  EXPECT_EQ(p.base, L"file.txt");
+  EXPECT_EQ(p.ext, L".txt");
+  EXPECT_EQ(p.name, L"file");
+
+  path::ParsedPath p2 = path::win32::parse("C:\\path\\dir\\file.txt");
+  EXPECT_EQ(p2.root, L"C:\\");
+  EXPECT_EQ(p2.dir, L"C:\\path\\dir");
+  EXPECT_EQ(p2.base, L"file.txt");
+  EXPECT_EQ(p2.ext, L".txt");
+  EXPECT_EQ(p2.name, L"file");
+
+  path::ParsedPath obj1;
+  obj1.root = L"/ignored";
+  obj1.dir = L"/home/user/dir";
+  obj1.base = L"file.txt";
+  EXPECT_EQ(path::posix::format(obj1), L"/home/user/dir/file.txt");
+
+  path::ParsedPath obj2;
+  obj2.root = L"/";
+  obj2.base = L"file.txt";
+  obj2.ext = L"ignored";
+  EXPECT_EQ(path::posix::format(obj2), L"/file.txt");
+
+  path::ParsedPath obj3;
+  obj3.root = L"/";
+  obj3.name = L"file";
+  obj3.ext = L".txt";
+  EXPECT_EQ(path::posix::format(obj3), L"/file.txt");
+
+  path::ParsedPath obj4;
+  obj4.dir = L"C:\\path\\dir";
+  obj4.name = L"file.txt";
+  EXPECT_EQ(path::win32::format(obj4), L"C:\\path\\dir\\file.txt");
+}

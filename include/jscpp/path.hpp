@@ -42,6 +42,8 @@ namespace win32 {
   JSCPP_API String dirname(const String& path);
   JSCPP_API String basename(const String& path, const String& ext = L"");
   JSCPP_API String extname(const String& path);
+  JSCPP_API String format(const ParsedPath& pathObject);
+  JSCPP_API ParsedPath parse(const String& path);
 }
 
 namespace posix {
@@ -70,6 +72,8 @@ namespace posix {
   JSCPP_API String dirname(const String& path);
   JSCPP_API String basename(const String& path, const String& ext = L"");
   JSCPP_API String extname(const String& path);
+  JSCPP_API String format(const ParsedPath& pathObject);
+  JSCPP_API ParsedPath parse(const String& path);
 }
 
 #ifdef _WIN32
@@ -93,6 +97,8 @@ inline String toNamespacedPath(const String& path) { return win32::toNamespacedP
 inline String dirname(const String& path) { return win32::dirname(path); }
 inline String basename(const String& path, const String& ext = L"") { return win32::basename(path, ext); }
 inline String extname(const String& path) { return win32::extname(path); }
+inline String format(const ParsedPath& pathObject) { return win32::format(pathObject); }
+inline ParsedPath parse(const String& path) { return win32::parse(path); }
 
 #else
 
@@ -115,6 +121,8 @@ inline String toNamespacedPath(const String& path) { return posix::toNamespacedP
 inline String dirname(const String& path) { return posix::dirname(path); }
 inline String basename(const String& path, const String& ext = L"") { return posix::basename(path, ext); }
 inline String extname(const String& path) { return posix::extname(path); }
+inline String format(const ParsedPath& pathObject) { return posix::format(pathObject); }
+inline ParsedPath parse(const String& path) { return posix::parse(path); }
 
 #endif
 
