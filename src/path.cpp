@@ -1,3 +1,14 @@
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
+#endif
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h> // _NSGetExecutablePath
+#endif
+
 #include "jscpp/path.hpp"
 #include "jscpp/Process.hpp"
 
@@ -1405,5 +1416,30 @@ const String delimiter = L":";
 #endif
 
 }
+
+namespace {
+  String getFilename() {
+#if defined(_WIN32)
+    wchar_t buf[MAX_PATH] = { 0 };
+    DWORD code = GetModuleFileNameW(nullptr, buf, MAX_PATH);
+    if (code == 0) return L"";
+    return buf;
+#elif defined(__APPLE__)
+    char buf[1024] = { 0 };
+    unsigned size = 1023;
+    int code = _NSGetExecutablePath(buf, &size);
+    if (code != 0) return String();
+    return path::posix::normalize(buf);
+#else
+    char buf[1024] = { 0 };
+    int code = readlink("/proc/self/exe", buf, 1023);
+    if (code <= 0) return String();
+    return buf;
+#endif
+  }
+}
+
+const String __filename(getFilename());
+const String __dirname(path::dirname(__filename));
 
 }

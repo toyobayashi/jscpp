@@ -135,6 +135,9 @@ extern JSCPP_API const String delimiter;
 
 }
 
+extern JSCPP_API const String __filename;
+extern JSCPP_API const String __dirname;
+
 }
 
 #endif

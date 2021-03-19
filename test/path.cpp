@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "jscpp/path.hpp"
 #include "jscpp/Process.hpp"
+#include "jscpp/Console.hpp"
 
 using namespace js;
 
@@ -134,4 +135,6 @@ TEST(jscppPath, constants) {
   EXPECT_EQ(path::sep, L"/");
   EXPECT_EQ(path::delimiter, L":");
 #endif
+  console.log(__filename);
+  console.log(__dirname);
 }
