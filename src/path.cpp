@@ -476,6 +476,120 @@ String join(const String& arg1, const String& arg2) {
   return win32InternalJoin(args);
 }
 
+// It will solve the relative path from `from` to `to`, for instance:
+//  from = 'C:\\orandea\\test\\aaa'
+//  to = 'C:\\orandea\\impl\\bbb'
+// The output of the function should be: '..\\..\\impl\\bbb'
+String relative(const String& f, const String& t) {
+  if (f == t)
+    return L"";
+
+  String fromOrig = win32::resolve(f);
+  String toOrig = win32::resolve(t);
+
+  if (fromOrig == toOrig)
+    return L"";
+
+  String from = fromOrig.toLowerCase();
+  String to = toOrig.toLowerCase();
+
+  if (from == to)
+    return L"";
+
+  // Trim any leading backslashes
+  int fromStart = 0;
+  while (fromStart < (int)from.length() &&
+          from.charCodeAt(fromStart) == CHAR_BACKWARD_SLASH) {
+    fromStart++;
+  }
+  // Trim trailing backslashes (applicable to UNC paths only)
+  int fromEnd = (int)from.length();
+  while (fromEnd - 1 > fromStart &&
+          from.charCodeAt(fromEnd - 1) == CHAR_BACKWARD_SLASH) {
+    fromEnd--;
+  }
+  int fromLen = fromEnd - fromStart;
+
+  // Trim any leading backslashes
+  int toStart = 0;
+  while (toStart < (int)to.length() &&
+          to.charCodeAt(toStart) == CHAR_BACKWARD_SLASH) {
+    toStart++;
+  }
+  // Trim trailing backslashes (applicable to UNC paths only)
+  int toEnd = (int)to.length();
+  while (toEnd - 1 > toStart &&
+          to.charCodeAt(toEnd - 1) == CHAR_BACKWARD_SLASH) {
+    toEnd--;
+  }
+  int toLen = toEnd - toStart;
+
+  // Compare paths to find the longest common path from root
+  int length = fromLen < toLen ? fromLen : toLen;
+  int lastCommonSep = -1;
+  int i = 0;
+  for (; i < length; i++) {
+    uint16_t fromCode = from.charCodeAt(fromStart + i);
+    if (fromCode != to.charCodeAt(toStart + i))
+      break;
+    else if (fromCode == CHAR_BACKWARD_SLASH)
+      lastCommonSep = i;
+  }
+
+  // We found a mismatch before the first common path separator was seen, so
+  // return the original `to`.
+  if (i != length) {
+    if (lastCommonSep == -1)
+      return toOrig;
+  } else {
+    if (toLen > length) {
+      if (to.charCodeAt(toStart + i) == CHAR_BACKWARD_SLASH) {
+        // We get here if `from` is the exact base path for `to`.
+        // For example: from='C:\\foo\\bar'; to='C:\\foo\\bar\\baz'
+        return toOrig.slice(toStart + i + 1);
+      }
+      if (i == 2) {
+        // We get here if `from` is the device root.
+        // For example: from='C:\\'; to='C:\\foo'
+        return toOrig.slice(toStart + i);
+      }
+    }
+    if (fromLen > length) {
+      if (from.charCodeAt(fromStart + i) == CHAR_BACKWARD_SLASH) {
+        // We get here if `to` is the exact base path for `from`.
+        // For example: from='C:\\foo\\bar'; to='C:\\foo'
+        lastCommonSep = i;
+      } else if (i == 2) {
+        // We get here if `to` is the device root.
+        // For example: from='C:\\foo\\bar'; to='C:\\'
+        lastCommonSep = 3;
+      }
+    }
+    if (lastCommonSep == -1)
+      lastCommonSep = 0;
+  }
+
+  String out;
+  // Generate the relative path based on the path difference between `to` and
+  // `from`
+  for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
+    if (i == fromEnd || from.charCodeAt(i) == CHAR_BACKWARD_SLASH) {
+      out += out.length() == 0 ? L".." : L"\\..";
+    }
+  }
+
+  toStart += lastCommonSep;
+
+  // Lastly, append the rest of the destination (`to`) path that comes after
+  // the common path parts
+  if (out.length() > 0)
+    return out + toOrig.slice(toStart, toEnd);
+
+  if (toOrig.charCodeAt(toStart) == CHAR_BACKWARD_SLASH)
+    ++toStart;
+  return toOrig.slice(toStart, toEnd);
+}
+
 
 }
 
@@ -563,6 +677,73 @@ String join(const String& arg1) {
 String join(const String& arg1, const String& arg2) {
   std::vector<String> args = { arg1, arg2 };
   return posixInternalJoin(args);
+}
+
+String relative(const String& f, const String& t) {
+  if (f == t)
+    return L"";
+
+  // Trim leading forward slashes.
+  String from = posix::resolve(f);
+  String to = posix::resolve(t);
+
+  if (from == to)
+    return L"";
+
+  int fromStart = 1;
+  int fromEnd = (int)from.length();
+  int fromLen = fromEnd - fromStart;
+  int toStart = 1;
+  int toLen = (int)to.length() - toStart;
+
+  // Compare paths to find the longest common path from root
+  int length = (fromLen < toLen ? fromLen : toLen);
+  int lastCommonSep = -1;
+  int i = 0;
+  for (; i < length; i++) {
+    uint16_t fromCode = from.charCodeAt(fromStart + i);
+    if (fromCode != to.charCodeAt(toStart + i))
+      break;
+    else if (fromCode == CHAR_FORWARD_SLASH)
+      lastCommonSep = i;
+  }
+  if (i == length) {
+    if (toLen > length) {
+      if (to.charCodeAt(toStart + i) == CHAR_FORWARD_SLASH) {
+        // We get here if `from` is the exact base path for `to`.
+        // For example: from='/foo/bar'; to='/foo/bar/baz'
+        return to.slice(toStart + i + 1);
+      }
+      if (i == 0) {
+        // We get here if `from` is the root
+        // For example: from='/'; to='/foo'
+        return to.slice(toStart + i);
+      }
+    } else if (fromLen > length) {
+      if (from.charCodeAt(fromStart + i) == CHAR_FORWARD_SLASH) {
+        // We get here if `to` is the exact base path for `from`.
+        // For example: from='/foo/bar/baz'; to='/foo/bar'
+        lastCommonSep = i;
+      } else if (i == 0) {
+        // We get here if `to` is the root.
+        // For example: from='/foo/bar'; to='/'
+        lastCommonSep = 0;
+      }
+    }
+  }
+
+  String out;
+  // Generate the relative path based on the path difference between `to`
+  // and `from`.
+  for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
+    if (i == fromEnd || from.charCodeAt(i) == CHAR_FORWARD_SLASH) {
+      out += out.length() == 0 ? L".." : L"/..";
+    }
+  }
+
+  // Lastly, append the rest of the destination (`to`) path that comes after
+  // the common path parts.
+  return out + to.slice(toStart + lastCommonSep);
 }
 
 }

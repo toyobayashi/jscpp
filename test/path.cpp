@@ -39,6 +39,7 @@ TEST(jscppPath, normalize) {
   EXPECT_EQ(path::win32::normalize("C:////temp\\\\/\\/\\/foo/bar"), L"C:\\temp\\foo\\bar");
 }
 
+
 TEST(jscppPath, join) {
   EXPECT_EQ(path::join(), L".");
   EXPECT_EQ(path::join("foo"), L"foo");
@@ -52,4 +53,9 @@ TEST(jscppPath, join) {
 
   EXPECT_EQ(path::win32::join("/foo", "bar", "baz/asdf", "quux", "..", "a", "bbb"), L"\\foo\\bar\\baz\\asdf\\a\\bbb");
   EXPECT_EQ(path::win32::join(L"中文", L"文件夹/1/2", ".."), L"中文\\文件夹\\1");
+}
+
+TEST(jscppPath, relative) {
+  EXPECT_EQ(path::posix::relative("/data/orandea/test/aaa", "/data/orandea/impl/bbb"), L"../../impl/bbb");
+  EXPECT_EQ(path::win32::relative("C:\\orandea\\test\\aaa", "C:\\orandea\\impl\\bbb"), L"..\\..\\impl\\bbb");
 }

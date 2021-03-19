@@ -35,6 +35,8 @@ namespace win32 {
     String tmp = win32::join(arg1, arg2);
     return win32::join(tmp, args...);
   }
+
+  JSCPP_API String relative(const String& from, const String& to);
 }
 
 namespace posix {
@@ -57,6 +59,8 @@ namespace posix {
     String tmp = posix::join(arg1, arg2);
     return posix::join(tmp, args...);
   }
+
+  JSCPP_API String relative(const String& from, const String& to);
 }
 
 #ifdef _WIN32
@@ -75,6 +79,8 @@ inline String join(const Args&... args) {
   return win32::join(args...);
 }
 
+inline String relative(const String& from, const String& to) { return win32::relative(from, to); }
+
 #else
 
 inline bool isAbsolute(const String& path) { return posix::isAbsolute(path); }
@@ -90,6 +96,8 @@ template <typename... Args>
 inline String join(const Args&... args) {
   return posix::join(args...);
 }
+
+inline String relative(const String& from, const String& to) { return posix::relative(from, to); }
 
 #endif
 
