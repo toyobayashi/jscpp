@@ -999,6 +999,9 @@ ParsedPath parse(const String& path) {
   return ret;
 }
 
+const String sep = L"\\";
+const String delimiter = L";";
+
 }
 
 namespace posix {
@@ -1388,7 +1391,18 @@ ParsedPath parse(const String& path) {
   return ret;
 }
 
+const String sep = L"/";
+const String delimiter = L":";
+
 }
+
+#ifdef _WIN32
+const String sep = L"\\";
+const String delimiter = L";";
+#else
+const String sep = L"/";
+const String delimiter = L":";
+#endif
 
 }
 

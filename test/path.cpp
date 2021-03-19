@@ -121,3 +121,17 @@ TEST(jscppPath, parseAndFormat) {
   obj4.name = L"file.txt";
   EXPECT_EQ(path::win32::format(obj4), L"C:\\path\\dir\\file.txt");
 }
+
+TEST(jscppPath, constants) {
+  EXPECT_EQ(path::win32::sep, L"\\");
+  EXPECT_EQ(path::posix::sep, L"/");
+  EXPECT_EQ(path::win32::delimiter, L";");
+  EXPECT_EQ(path::posix::delimiter, L":");
+#ifdef _WIN32
+  EXPECT_EQ(path::sep, L"\\");
+  EXPECT_EQ(path::delimiter, L";");
+#else
+  EXPECT_EQ(path::sep, L"/");
+  EXPECT_EQ(path::delimiter, L":");
+#endif
+}

@@ -44,6 +44,8 @@ namespace win32 {
   JSCPP_API String extname(const String& path);
   JSCPP_API String format(const ParsedPath& pathObject);
   JSCPP_API ParsedPath parse(const String& path);
+  extern JSCPP_API const String sep;
+  extern JSCPP_API const String delimiter;
 }
 
 namespace posix {
@@ -74,6 +76,8 @@ namespace posix {
   JSCPP_API String extname(const String& path);
   JSCPP_API String format(const ParsedPath& pathObject);
   JSCPP_API ParsedPath parse(const String& path);
+  extern JSCPP_API const String sep;
+  extern JSCPP_API const String delimiter;
 }
 
 #ifdef _WIN32
@@ -125,6 +129,9 @@ inline String format(const ParsedPath& pathObject) { return posix::format(pathOb
 inline ParsedPath parse(const String& path) { return posix::parse(path); }
 
 #endif
+
+extern JSCPP_API const String sep;
+extern JSCPP_API const String delimiter;
 
 }
 
