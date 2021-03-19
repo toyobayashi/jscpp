@@ -16,7 +16,7 @@ struct ParsedPath {
 };
 
 namespace win32 {
-  JSCPP_API bool isAbsolute(const String&);
+  JSCPP_API bool isAbsolute(const String& path);
   JSCPP_API String resolve(const String& arg1 = L"", const String& arg2 = L"");
 
   template <typename... Args>
@@ -25,7 +25,7 @@ namespace win32 {
     return win32::resolve(tmp, args...);
   }
 
-  JSCPP_API String normalize(const String&);
+  JSCPP_API String normalize(const String& path);
   JSCPP_API String join();
   JSCPP_API String join(const String& arg1);
   JSCPP_API String join(const String& arg1, const String& arg2);
@@ -38,10 +38,11 @@ namespace win32 {
 
   JSCPP_API String relative(const String& from, const String& to);
   JSCPP_API String toNamespacedPath(const String& path);
+  JSCPP_API String dirname(const String& path);
 }
 
 namespace posix {
-  JSCPP_API bool isAbsolute(const String&);
+  JSCPP_API bool isAbsolute(const String& path);
   JSCPP_API String resolve(const String& arg1 = L"", const String& arg2 = L"");
 
   template <typename... Args>
@@ -50,7 +51,7 @@ namespace posix {
     return posix::resolve(tmp, args...);
   }
 
-  JSCPP_API String normalize(const String&);
+  JSCPP_API String normalize(const String& path);
   JSCPP_API String join();
   JSCPP_API String join(const String& arg1);
   JSCPP_API String join(const String& arg1, const String& arg2);
@@ -63,6 +64,7 @@ namespace posix {
 
   JSCPP_API String relative(const String& from, const String& to);
   JSCPP_API String toNamespacedPath(const String& path);
+  JSCPP_API String dirname(const String& path);
 }
 
 #ifdef _WIN32
@@ -83,6 +85,7 @@ inline String join(const Args&... args) {
 
 inline String relative(const String& from, const String& to) { return win32::relative(from, to); }
 inline String toNamespacedPath(const String& path) { return win32::toNamespacedPath(path); }
+inline String dirname(const String& path) { return win32::dirname(path); }
 
 #else
 
@@ -102,6 +105,7 @@ inline String join(const Args&... args) {
 
 inline String relative(const String& from, const String& to) { return posix::relative(from, to); }
 inline String toNamespacedPath(const String& path) { return posix::toNamespacedPath(path); }
+inline String dirname(const String& path) { return posix::dirname(path); }
 
 #endif
 

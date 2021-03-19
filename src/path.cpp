@@ -620,6 +620,91 @@ String toNamespacedPath(const String& path) {
   return path;
 }
 
+String dirname(const String& path) {
+  int len = (int)path.length();
+  if (len == 0)
+    return L".";
+  int rootEnd = -1;
+  int offset = 0;
+  uint16_t code = path.charCodeAt(0);
+
+  if (len == 1) {
+    // `path` contains just a path separator, exit early to avoid
+    // unnecessary work or a dot.
+    return isPathSeparator(code) ? path : '.';
+  }
+
+  // Try to match a root
+  if (isPathSeparator(code)) {
+    // Possible UNC root
+
+    rootEnd = offset = 1;
+
+    if (isPathSeparator(path.charCodeAt(1))) {
+      // Matched double path separator at beginning
+      int j = 2;
+      int last = j;
+      // Match 1 or more non-path separators
+      while (j < len && !isPathSeparator(path.charCodeAt(j))) {
+        j++;
+      }
+      if (j < len && j != last) {
+        // Matched!
+        last = j;
+        // Match 1 or more path separators
+        while (j < len && isPathSeparator(path.charCodeAt(j))) {
+          j++;
+        }
+        if (j < len && j != last) {
+          // Matched!
+          last = j;
+          // Match 1 or more non-path separators
+          while (j < len && !isPathSeparator(path.charCodeAt(j))) {
+            j++;
+          }
+          if (j == len) {
+            // We matched a UNC root only
+            return path;
+          }
+          if (j != last) {
+            // We matched a UNC root with leftovers
+
+            // Offset by 1 to include the separator after the UNC root to
+            // treat it as a "normal root" on top of a (UNC) root
+            rootEnd = offset = j + 1;
+          }
+        }
+      }
+    }
+  // Possible device root
+  } else if (isWindowsDeviceRoot(code) && path.charCodeAt(1) == CHAR_COLON) {
+    rootEnd = len > 2 && isPathSeparator(path.charCodeAt(2)) ? 3 : 2;
+    offset = rootEnd;
+  }
+
+  int end = -1;
+  bool matchedSlash = true;
+  for (int i = len - 1; i >= offset; --i) {
+    if (isPathSeparator(path.charCodeAt(i))) {
+      if (!matchedSlash) {
+        end = i;
+        break;
+      }
+    } else {
+      // We saw the first non-path separator
+      matchedSlash = false;
+    }
+  }
+
+  if (end == -1) {
+    if (rootEnd == -1)
+      return L".";
+
+    end = rootEnd;
+  }
+  return path.slice(0, end);
+}
+
 }
 
 namespace posix {
@@ -777,6 +862,31 @@ String relative(const String& f, const String& t) {
 
 String toNamespacedPath(const String& path) {
   return path;
+}
+
+String dirname(const String& path) {
+  if (path.length() == 0)
+    return L".";
+  bool hasRoot = path.charCodeAt(0) == CHAR_FORWARD_SLASH;
+  int end = -1;
+  bool matchedSlash = true;
+  for (int i = (int)path.length() - 1; i >= 1; --i) {
+    if (path.charCodeAt(i) == CHAR_FORWARD_SLASH) {
+      if (!matchedSlash) {
+        end = i;
+        break;
+      }
+    } else {
+      // We saw the first non-path separator
+      matchedSlash = false;
+    }
+  }
+
+  if (end == -1)
+    return hasRoot ? L"/" : L".";
+  if (hasRoot && end == 1)
+    return L"//";
+  return path.slice(0, end);
 }
 
 }

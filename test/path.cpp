@@ -59,3 +59,10 @@ TEST(jscppPath, relative) {
   EXPECT_EQ(path::posix::relative("/data/orandea/test/aaa", "/data/orandea/impl/bbb"), L"../../impl/bbb");
   EXPECT_EQ(path::win32::relative("C:\\orandea\\test\\aaa", "C:\\orandea\\impl\\bbb"), L"..\\..\\impl\\bbb");
 }
+
+TEST(jscppPath, dirname) {
+  EXPECT_EQ(path::dirname("/foo/bar/baz/asdf/quux"), L"/foo/bar/baz/asdf");
+  EXPECT_EQ(path::dirname("/foo/bar/baz/asdf/.."), L"/foo/bar/baz/asdf");
+  EXPECT_EQ(path::dirname("."), L".");
+  EXPECT_EQ(path::dirname(".."), L".");
+}
