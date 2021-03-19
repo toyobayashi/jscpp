@@ -12,16 +12,16 @@ public:
   static std::map<String, String> getEnv();
   static String getPlatform() noexcept;
 public:
-  int pid;
+  const int pid;
   std::map<String, String> env;
-  String platform;
+  const String platform;
 
   Process();
 
   String cwd() const noexcept;
 };
 
-extern JSCPP_API const Process process;
+extern JSCPP_API Process process;
 
 }
 

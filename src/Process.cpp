@@ -113,6 +113,6 @@ String Process::cwd() const noexcept {
 #endif
 }
 
-const Process process;
+Process process;
 
 }
