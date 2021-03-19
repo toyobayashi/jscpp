@@ -35,7 +35,7 @@ String String::fromCodePoint(const std::vector<uint32_t>& codes) {
   for (; index != len; ++index) {
     uint32_t codePoint = codes[index];
     if (codePoint >= 0x10FFFF) {
-      throwError(String("Invalid code point: ") + codePoint);
+      internal::throwError(String("Invalid code point: ") + codePoint);
     }
 
     if (codePoint <= 0xFFFF) {

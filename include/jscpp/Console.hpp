@@ -127,6 +127,8 @@ public:
   Console(const Console&) = delete;
   Console& operator=(const Console&) = delete;
 
+  void write(const String& str);
+
   template <typename... Args>
   void write(const String& format, const Args&... args) {
     printf(format.str().c_str(), args...);
@@ -138,6 +140,8 @@ public:
     _out << _format(arg);
     _out.flush();
   }
+
+  void log(const String& str);
 
   template <typename... Args>
   void log(const String& format, const Args&... args) {

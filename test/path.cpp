@@ -2,6 +2,7 @@
 #include "jscpp/path.hpp"
 #include "jscpp/Process.hpp"
 #include "jscpp/Console.hpp"
+#include "jscpp/os.hpp"
 
 using namespace js;
 
@@ -135,6 +136,8 @@ TEST(jscppPath, constants) {
   EXPECT_EQ(path::sep, L"/");
   EXPECT_EQ(path::delimiter, L":");
 #endif
-  console.log(__filename);
-  console.log(__dirname);
+  console.log(L"__filename: " + __filename);
+  console.log(L"__dirname: " + __dirname);
+  console.log(L"临时目录: " + os::tmpdir());
+  console.log(L"home: " + os::homedir());
 }

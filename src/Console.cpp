@@ -41,6 +41,9 @@ std::string Console::_format(const std::vector<unsigned char>& buf) {
 
 Console::Console() noexcept: _out(std::cout), _err(std::cerr) {}
 
+void Console::write(const String& str) { _out << _format(str); _out.flush(); }
+void Console::log(const String& str) { _out << _format(str) << std::endl; }
+
 void Console::clear() {
 #ifdef _WIN32
   HANDLE _consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);

@@ -15,7 +15,8 @@ module.exports = function (options) {
         publicIncludePaths: ['include'],
         // publicDefines: ['JSCPP_USE_ERROR=0'],
         windows: {
-          publicCompileOptions: ['/wd4251', '/wd4275']
+          publicCompileOptions: ['/wd4251', '/wd4275'],
+          libs: ['Userenv']
         }
       },
       ...(options.NOTEST ? [] : [{

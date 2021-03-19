@@ -3,6 +3,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <Windows.h>
+#else
+#include <unistd.h>
 #endif
 
 #ifdef __APPLE__
@@ -1430,6 +1432,8 @@ namespace {
     int code = _NSGetExecutablePath(buf, &size);
     if (code != 0) return String();
     return path::posix::normalize(buf);
+#elif defined(__EMSCRIPTEN__)
+    return L"";
 #else
     char buf[1024] = { 0 };
     int code = readlink("/proc/self/exe", buf, 1023);

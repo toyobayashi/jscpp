@@ -13,7 +13,9 @@ namespace js {
 
 class String;
 
-JSCPP_NORETURN void throwError(const String& msg);
+namespace internal {
+  JSCPP_NORETURN void throwError(const String& msg);
+}
 
 }
 
