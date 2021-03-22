@@ -3,18 +3,19 @@
 #include "jscpp/fs.hpp"
 #include "jscpp/Error.hpp"
 #include "jscpp/Console.hpp"
-#include "jscpp/os.hpp"
+#include "jscpp/Process.hpp"
 
 using namespace js;
 
-TEST(jscppFilesystem, statAndLstat) {
 #if JSCPP_USE_ERROR
-  EXPECT_THROW(fs::stat("noexists"), Error);
-  EXPECT_THROW(fs::lstat("noexists"), Error);
+#define JSCPP_EXPECT_THROW(exp, msg) EXPECT_THROW(exp, Error)
 #else
-  EXPECT_DEATH_IF_SUPPORTED(fs::stat("noexists"), "stat");
-  EXPECT_DEATH_IF_SUPPORTED(fs::lstat("noexists"), "lstat");
+#define JSCPP_EXPECT_THROW(exp, msg) EXPECT_DEATH_IF_SUPPORTED(exp, msg)
 #endif
+
+TEST(jscppFilesystem, statAndLstat) {
+  JSCPP_EXPECT_THROW(fs::stat("noexists"), "stat");
+  JSCPP_EXPECT_THROW(fs::lstat("noexists"), "lstat");
 
   fs::Stats stats1 = fs::stat(__dirname);
   EXPECT_TRUE(stats1.isDirectory());
@@ -33,4 +34,39 @@ TEST(jscppFilesystem, exists) {
   EXPECT_TRUE(fs::exists(__filename));
 #endif
   EXPECT_FALSE(fs::exists(L"noexists"));
+}
+
+TEST(jscppFilesystem, mkdirs) {
+  EXPECT_NO_THROW(fs::mkdirs(__dirname));
+
+  String mkdir1 = String(L"mkdir_") + process.platform + "_1";
+  fs::mkdirs(mkdir1);
+  EXPECT_TRUE(fs::exists(mkdir1));
+  fs::remove(mkdir1);
+  EXPECT_FALSE(fs::exists(mkdir1));
+
+  String root = String("mkdir_") + process.platform + "_2";
+  String mkdir2 = path::join(root, "subdir/a/b/c");
+  fs::mkdirs(mkdir2);
+  EXPECT_TRUE(fs::exists(mkdir2));
+  fs::remove(root);
+  EXPECT_FALSE(fs::exists(mkdir2));
+  EXPECT_FALSE(fs::exists(root));
+
+  String mkdir3 = __filename;
+#ifndef __EMSCRIPTEN__
+  JSCPP_EXPECT_THROW(fs::mkdirs(mkdir3), strerror(EEXIST));
+#endif
+
+  String mkdir4 = path::join(__filename, "fail");
+#ifndef __EMSCRIPTEN__
+  JSCPP_EXPECT_THROW(fs::mkdirs(mkdir4), strerror(ENOENT));
+#else
+  fs::mkdirs(mkdir4);
+  console.log(fs::exists(mkdir4));
+  console.log(fs::readdir(mkdir3));
+  fs::remove(mkdir4);
+  console.log(fs::exists(mkdir4));
+  console.log(fs::readdir(mkdir3));
+#endif
 }

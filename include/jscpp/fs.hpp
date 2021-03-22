@@ -175,6 +175,13 @@ JSCPP_API void access(const String&, int mode = 0);
 JSCPP_API void chmod(const String&, int mode);
 JSCPP_API bool exists(const String&);
 
+JSCPP_API void mkdir(const String&, int mode = 0777);
+JSCPP_API void mkdirs(const String&, int mode = 0777);
+JSCPP_API void unlink(const String&);
+JSCPP_API void rmdir(const String&);
+JSCPP_API void rename(const String&, const String&);
+JSCPP_API void remove(const String&);
+
 }
 }
 

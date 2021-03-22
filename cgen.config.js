@@ -20,7 +20,7 @@ module.exports = function (options, ctx) {
         } : {}),
         windows: {
           publicCompileOptions: ['/wd4251', '/wd4275'],
-          libs: ['Userenv']
+          libs: ['ntdll', 'Userenv']
         }
       },
       ...(options.NOTEST ? [] : [{
