@@ -232,9 +232,9 @@ TEST(jscppString, map) {
 }
 
 TEST(jscppProcess, output) {
-  for (const auto& p : process.env) {
-    console.info(L"环境变量：%s = %s", p.first.str().c_str(), p.second.str().c_str());
-  }
+  // for (const auto& p : process.env) {
+  //   console.info(L"环境变量：%s = %s", p.first.str().c_str(), p.second.str().c_str());
+  // }
   console.warn("pid: %d", process.pid);
   console.error("platform: %s", process.platform.str().c_str());
 }
