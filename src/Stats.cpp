@@ -81,13 +81,14 @@ Stats Stats::create(const String& p, bool followLink) {
 #else
   int code = 0;
   struct stat info;
+  std::string pathstr = path.str();
   if (followLink) {
-    code = ::stat(path.c_str(), &info);
+    code = ::stat(pathstr.c_str(), &info);
     if (code != 0) {
       internal::throwError(String(strerror(errno)) + L", " + String(L"stat") + L" \"" + p + L"\"");
     }
   } else {
-    code = ::lstat(path.c_str(), &info);
+    code = ::lstat(pathstr.c_str(), &info);
     if (code != 0) {
       internal::throwError(String(strerror(errno)) + L", " + String(L"lstat") + L" \"" + p + L"\"");
     }

@@ -20,14 +20,14 @@ namespace js {
 namespace fs {
 
 enum class AccessType {
-  F_OK = 0,
+  FOK = 0,
 #ifdef _WIN32
-  X_OK = 0,
+  XOK = 0,
 #else
-  X_OK = 1,
+  XOK = 1,
 #endif
-  W_OK = 2,
-  R_OK = 4,
+  WOK = 2,
+  ROK = 4
 };
 
 enum class SymlinkType {
