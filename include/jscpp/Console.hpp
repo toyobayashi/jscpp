@@ -44,7 +44,7 @@ private:
       oss << "Vector []";
       return oss.str();
     }
-    oss << "[ ";
+    oss << "Vector [ ";
     for (size_t i = 0; i < len; i++) {
       oss << arr[i];
       if (i != len - 1) {
