@@ -19,7 +19,7 @@ namespace js {
 
 namespace fs {
 
-enum class AccessType {
+enum AccessType {
   FOK = 0,
 #ifdef _WIN32
   XOK = 0,
@@ -30,7 +30,7 @@ enum class AccessType {
   ROK = 4
 };
 
-enum class SymlinkType {
+enum SymlinkType {
   FILE,
   DIRECTORY,
   JUNCTION
@@ -41,6 +41,7 @@ private:
   bool _isLink;
 public:
   static Stats create(const String&, bool followLink = false);
+  static int createNoThrow(Stats& out, const String& p, bool followLink = false);
 
   unsigned int dev;
   unsigned short ino;
@@ -169,6 +170,10 @@ public:
 
 JSCPP_API fs::Dir opendir(const String&);
 JSCPP_API std::vector<String> readdir(const String&);
+
+JSCPP_API void access(const String&, int mode = 0);
+JSCPP_API void chmod(const String&, int mode);
+JSCPP_API bool exists(const String&);
 
 }
 }

@@ -14,9 +14,8 @@
 namespace js {
 namespace fs {
 
-Stats Stats::create(const String& p, bool followLink) {
+int Stats::createNoThrow(Stats& r, const String& p, bool followLink) {
   String path = path::normalize(p);
-  Stats r;
 #ifdef _WIN32
   int code = 0;
   struct _stat info;
@@ -24,7 +23,7 @@ Stats Stats::create(const String& p, bool followLink) {
   if (followLink) { // stat
     code = _wstat(path.data(), &info);
     if (code != 0) {
-      internal::throwError(String(strerror(errno)) + L", " + String(L"stat") + L" \"" + p + L"\"");
+      return errno;
     }
     r._isLink = false;
     r.dev = info.st_dev;
@@ -38,12 +37,12 @@ Stats Stats::create(const String& p, bool followLink) {
     r.atime = info.st_atime;
     r.mtime = info.st_mtime;
     r.ctime = info.st_ctime;
-    return r;
+    return 0;
   }
 
   DWORD attrs = GetFileAttributesW(path.data());
   if (attrs == INVALID_FILE_ATTRIBUTES) {
-    internal::throwError(String(strerror(ENOENT)) + L", " + String(L"lstat") + L" \"" + p + L"\"");
+    return ENOENT;
   }
   bool isLink = ((attrs & FILE_ATTRIBUTE_REPARSE_POINT) == FILE_ATTRIBUTE_REPARSE_POINT);
   if (isLink) {
@@ -62,7 +61,7 @@ Stats Stats::create(const String& p, bool followLink) {
   } else {
     code = _wstat(path.data(), &info);
     if (code != 0) {
-      internal::throwError(String(strerror(errno)) + L", " + String(L"lstat") + L" \"" + p + L"\"");
+      return errno;
     }
     r._isLink = false;
     r.dev = info.st_dev;
@@ -77,7 +76,7 @@ Stats Stats::create(const String& p, bool followLink) {
     r.mtime = info.st_mtime;
     r.ctime = info.st_ctime;
   }
-  return r;
+  return 0;
 #else
   int code = 0;
   struct stat info;
@@ -85,12 +84,12 @@ Stats Stats::create(const String& p, bool followLink) {
   if (followLink) {
     code = ::stat(pathstr.c_str(), &info);
     if (code != 0) {
-      internal::throwError(String(strerror(errno)) + L", " + String(L"stat") + L" \"" + p + L"\"");
+      return errno;
     }
   } else {
     code = ::lstat(pathstr.c_str(), &info);
     if (code != 0) {
-      internal::throwError(String(strerror(errno)) + L", " + String(L"lstat") + L" \"" + p + L"\"");
+      return errno;
     }
   }
 
@@ -107,8 +106,21 @@ Stats Stats::create(const String& p, bool followLink) {
   r.atime = info.st_atime;
   r.mtime = info.st_mtime;
   r.ctime = info.st_ctime;
-  return r;
+  return 0;
 #endif
+}
+
+Stats Stats::create(const String& p, bool followLink) {
+  Stats out;
+  int r = createNoThrow(out, p, followLink);
+  if (r != 0) {
+    if (followLink) {
+      internal::throwError(String(strerror(r)) + L", " + String(L"stat") + L" \"" + p + L"\"");
+    } else {
+      internal::throwError(String(strerror(r)) + L", " + String(L"lstat") + L" \"" + p + L"\"");
+    }
+  }
+  return out;
 }
 
 bool Stats::isFile() const noexcept {

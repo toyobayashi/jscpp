@@ -27,3 +27,10 @@ TEST(jscppFilesystem, readdir) {
   std::vector<String> items = fs::readdir(__dirname);
   console.log(items);
 }
+
+TEST(jscppFilesystem, exists) {
+#ifndef __EMSCRIPTEN__
+  EXPECT_TRUE(fs::exists(__filename));
+#endif
+  EXPECT_FALSE(fs::exists(L"noexists"));
+}
