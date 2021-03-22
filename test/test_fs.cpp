@@ -2,10 +2,12 @@
 #include "jscpp/path.hpp"
 #include "jscpp/fs.hpp"
 #include "jscpp/Error.hpp"
+#include "jscpp/Console.hpp"
+#include "jscpp/os.hpp"
 
 using namespace js;
 
-TEST(jscppFilesystem, stat) {
+TEST(jscppFilesystem, statAndLstat) {
 #if JSCPP_USE_ERROR
   EXPECT_THROW(fs::stat("noexists"), Error);
   EXPECT_THROW(fs::lstat("noexists"), Error);
@@ -19,4 +21,9 @@ TEST(jscppFilesystem, stat) {
 
   fs::Stats stats2 = fs::lstat(__dirname);
   EXPECT_TRUE(stats2.isDirectory());
+}
+
+TEST(jscppFilesystem, readdir) {
+  std::vector<String> items = fs::readdir(__dirname);
+  console.log(items);
 }

@@ -66,6 +66,110 @@ public:
 JSCPP_API Stats stat(const String&);
 JSCPP_API Stats lstat(const String&);
 
+class Dirent;
+class Dir;
+
+#ifdef _WIN32
+class JSCPP_API Dirent {
+private:
+  struct _wfinddata_t* dirent_;
+
+public:
+  Dirent() noexcept;
+  ~Dirent();
+  Dirent(const Dirent&) = delete;
+  Dirent& operator=(const Dirent&) = delete;
+  Dirent(Dirent&&) noexcept;
+  Dirent& operator=(Dirent&&);
+
+  Dirent(struct _wfinddata_t*);
+
+  bool isEmpty() const noexcept;
+
+  const struct _wfinddata_t* data() const noexcept;
+
+  String name() const noexcept;
+
+  bool isFile() const noexcept;
+  bool isDirectory() const noexcept;
+  bool isFifo() const noexcept;
+  bool isCharacterDevice() const noexcept;
+  bool isSymbolicLink() const noexcept;
+  bool isBlockDevice() const noexcept;
+  bool isSocket() const noexcept;
+};
+
+class JSCPP_API Dir {
+private:
+  intptr_t dir_;
+  String path_;
+  struct _wfinddata_t* first_data_;
+public:
+  ~Dir() noexcept;
+  Dir() noexcept;
+  Dir(const Dir&) = delete;
+  Dir& operator=(const Dir&) = delete;
+  Dir(Dir&&) noexcept;
+  Dir& operator=(Dir&&);
+
+  static Dir create(const String&);
+  void close();
+  String path() const noexcept;
+  fs::Dirent read();
+};
+#else
+
+class JSCPP_API Dirent {
+private:
+  struct ::dirent* dirent_;
+
+public:
+  ~Dirent();
+  Dirent() noexcept;
+  Dirent(const Dirent&) = delete;
+  Dirent& operator=(const Dirent&) = delete;
+  Dirent(Dirent&&) noexcept;
+  Dirent& operator=(Dirent&&);
+
+  Dirent(struct ::dirent*);
+
+  bool isEmpty() const noexcept;
+
+  const struct ::dirent* data() const noexcept;
+
+  String name() const noexcept;
+
+  bool isFile() const noexcept;
+  bool isDirectory() const noexcept;
+  bool isFifo() const noexcept;
+  bool isCharacterDevice() const noexcept;
+  bool isSymbolicLink() const noexcept;
+  bool isBlockDevice() const noexcept;
+  bool isSocket() const noexcept;
+};
+
+class JSCPP_API Dir {
+private:
+  DIR* dir_;
+  String path_;
+public:
+  ~Dir();
+  Dir() noexcept;
+  Dir(const Dir&) = delete;
+  Dir& operator=(const Dir& d) = delete;
+  Dir(Dir&&) noexcept;
+  Dir& operator=(Dir&& d);
+
+  static Dir create(const String& p);
+  void close();
+  String path() const noexcept;
+  fs::Dirent read() const noexcept;
+};
+#endif
+
+JSCPP_API fs::Dir opendir(const String&);
+JSCPP_API std::vector<String> readdir(const String&);
+
 }
 }
 
