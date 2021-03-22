@@ -24,7 +24,8 @@ module.exports = function (options) {
         type: 'exe',
         sources: [
           './test/main.cpp',
-          './test/path.cpp'
+          './test/path.cpp',
+          './test/test_fs.cpp'
         ],
         ...(options.DLL ? { defines: ['JSCPP_IMPORT_DLL'] } : {}),
         // compileOptions: ['/execution-charset:utf-8']
