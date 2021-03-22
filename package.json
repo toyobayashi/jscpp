@@ -16,6 +16,6 @@
     "clean:wasm": "cgen clean -B test/build"
   },
   "devDependencies": {
-    "@tybys/cgen": "^0.6.0"
+    "@tybys/cgen": "^0.6.1"
   }
 }

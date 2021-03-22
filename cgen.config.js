@@ -1,4 +1,4 @@
-module.exports = function (options) {
+module.exports = function (options, ctx) {
   return {
     project: 'jscpp',
     dependencies: options.NOTEST ? {} : {
@@ -13,7 +13,11 @@ module.exports = function (options) {
         ],
         ...(options.DLL ? { defines: ['JSCPP_BUILD_DLL'] } : {}),
         publicIncludePaths: ['include'],
-        // publicDefines: ['JSCPP_USE_ERROR=0'],
+        ...(ctx.isEmscripten ? {
+          publicDefines: ['JSCPP_USE_ERROR=1'],
+          publicCompileOptions: ['-fexceptions'],
+          publicLinkOptions: ['-fexceptions']
+        } : {}),
         windows: {
           publicCompileOptions: ['/wd4251', '/wd4275'],
           libs: ['Userenv']
