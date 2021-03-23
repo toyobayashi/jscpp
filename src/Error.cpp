@@ -1,4 +1,4 @@
-#include "throw.hpp"
+#include "./internal/throw.hpp"
 #include "jscpp/Error.hpp"
 #include "jscpp/String.hpp"
 

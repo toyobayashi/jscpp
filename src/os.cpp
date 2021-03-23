@@ -21,8 +21,8 @@
 
 #include "jscpp/os.hpp"
 #include "jscpp/Process.hpp"
-#include "winerr.hpp"
-#include "throw.hpp"
+#include "./internal/winerr.hpp"
+#include "./internal/throw.hpp"
 
 namespace js {
 

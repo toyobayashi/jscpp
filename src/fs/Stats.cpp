@@ -7,7 +7,7 @@
 
 #include "jscpp/fs.hpp"
 #include "jscpp/path.hpp"
-#include "throw.hpp"
+#include "../internal/throw.hpp"
 #include <cerrno>
 #include <cstring>
 

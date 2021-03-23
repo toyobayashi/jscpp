@@ -11,8 +11,8 @@
 
 #include "jscpp/fs.hpp"
 #include "jscpp/path.hpp"
-#include "winerr.hpp"
-#include "throw.hpp"
+#include "../internal/winerr.hpp"
+#include "../internal/throw.hpp"
 #include "jscpp/Error.hpp"
 #include <cerrno>
 #include <cstring>
