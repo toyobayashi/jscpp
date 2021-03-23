@@ -1,10 +1,7 @@
 // #include <iostream>
 #include "gtest/gtest.h"
 // #define JSCPP_FORCE_UTF8
-#include "jscpp/utf8.hpp"
-#include "jscpp/Process.hpp"
-#include "jscpp/Error.hpp"
-#include "jscpp/Console.hpp"
+#include "jscpp/index.hpp"
 // #include <cstdlib>
 #include <unordered_map>
 #include <map>

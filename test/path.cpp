@@ -1,9 +1,5 @@
 #include "gtest/gtest.h"
-#include "jscpp/path.hpp"
-#include "jscpp/Process.hpp"
-#include "jscpp/Console.hpp"
-#include "jscpp/os.hpp"
-#include "jscpp/env_paths.hpp"
+#include "jscpp/index.hpp"
 
 using namespace js;
 
