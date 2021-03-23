@@ -139,7 +139,7 @@ Dir Dir::create(const String& p) {
   if (dir.dir_ == -1) {
     delete dir.first_data_;
     dir.first_data_ = nullptr;
-    internal::throwError(String(strerror(errno)) + L", " + String(L"opendir") + L" \"" + p + L"\"");
+    internal::throwError(String(strerror(errno)) + L", opendir" + L" \"" + p + L"\"");
   }
   return dir;
 }
@@ -153,7 +153,7 @@ void Dir::close() {
   }
   if (dir_ != -1) {
     if (0 != _findclose(dir_)) {
-      internal::throwError(String(strerror(errno)) + L", " + String(L"closedir") + L" \"" + path_ + L"\"");
+      internal::throwError(String(strerror(errno)) + L", closedir" + L" \"" + path_ + L"\"");
     };
     dir_ = -1;
   }
@@ -266,7 +266,7 @@ Dir Dir::create(const String& p) {
   dir.path_ = p;
   String path = path::normalize(p);
   if ((dir.dir_ = ::opendir(path.str().c_str())) == nullptr) {
-    internal::throwError(String(strerror(errno)) + L", " + String(L"opendir") + L" \"" + p + L"\"");
+    internal::throwError(String(strerror(errno)) + L", opendir" + L" \"" + p + L"\"");
   }
   return dir;
 }
@@ -301,7 +301,7 @@ String Dir::path() const noexcept { return path_; }
 void Dir::close() {
   if (dir_) {
     if (0 != closedir(dir_)) {
-      internal::throwError(String(strerror(errno)) + L", " + String(L"closedir") + L" \"" + path_ + L"\"");
+      internal::throwError(String(strerror(errno)) + L", closedir" + L" \"" + path_ + L"\"");
     }
     dir_ = nullptr;
   }

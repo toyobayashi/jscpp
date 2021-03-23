@@ -20,20 +20,20 @@ namespace js {
 namespace fs {
 
 enum AccessType {
-  FOK = 0,
+  AT_FOK = 0,
 #ifdef _WIN32
-  XOK = 0,
+  AT_XOK = 0,
 #else
-  XOK = 1,
+  AT_XOK = 1,
 #endif
-  WOK = 2,
-  ROK = 4
+  AT_WOK = 2,
+  AT_ROK = 4
 };
 
 enum SymlinkType {
-  FILE,
-  DIRECTORY,
-  JUNCTION
+  ST_FILE,
+  ST_DIRECTORY,
+  ST_JUNCTION
 };
 
 class JSCPP_API Stats {
@@ -181,6 +181,19 @@ JSCPP_API void unlink(const String&);
 JSCPP_API void rmdir(const String&);
 JSCPP_API void rename(const String&, const String&);
 JSCPP_API void remove(const String&);
+
+JSCPP_API void symlink(const String&, const String&);
+JSCPP_API void symlink(const String&, const String&, SymlinkType);
+JSCPP_API String realpath(const String&);
+JSCPP_API void copyFile(const String&, const String&, bool failIfExists = false);
+JSCPP_API void copy(const String&, const String&, bool failIfExists = false);
+JSCPP_API void move(const String&, const String&);
+JSCPP_API std::vector<uint8_t> readFile(const String&);
+JSCPP_API String readFileAsString(const String&);
+JSCPP_API void writeFile(const String&, const std::vector<uint8_t>&);
+JSCPP_API void writeFile(const String&, const String&);
+JSCPP_API void appendFile(const String&, const std::vector<uint8_t>&);
+JSCPP_API void appendFile(const String&, const String&);
 
 }
 }

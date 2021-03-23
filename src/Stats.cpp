@@ -115,9 +115,9 @@ Stats Stats::create(const String& p, bool followLink) {
   int r = createNoThrow(out, p, followLink);
   if (r != 0) {
     if (followLink) {
-      internal::throwError(String(strerror(r)) + L", " + String(L"stat") + L" \"" + p + L"\"");
+      internal::throwError(String(strerror(r)) + L", stat" + L" \"" + p + L"\"");
     } else {
-      internal::throwError(String(strerror(r)) + L", " + String(L"lstat") + L" \"" + p + L"\"");
+      internal::throwError(String(strerror(r)) + L", lstat" + L" \"" + p + L"\"");
     }
   }
   return out;

@@ -16,6 +16,7 @@
 #include "jscpp/Error.hpp"
 #include <cerrno>
 #include <cstring>
+#include <cstdlib>
 
 #define JSCPP_FS_BUFFER_SIZE 128 * 1024
 
@@ -344,7 +345,7 @@ static void fs_create_junction(const WCHAR* path, const WCHAR* new_path) {
 
   if (!is_absolute) {
     /* Not supporting relative paths */
-    throw std::runtime_error("Not supporting relative paths.");
+    internal::throwError(L"Not supporting relative paths.");
   }
 
   /* Do a pessimistic calculation of the required buffer size */
@@ -356,7 +357,7 @@ static void fs_create_junction(const WCHAR* path, const WCHAR* new_path) {
   /* Allocate the buffer */
   buffer = (REPARSE_DATA_BUFFER*)malloc(needed_buf_size);
   if (!buffer) {
-    throw std::runtime_error("Out of memory.");
+    internal::throwError(L"Out of memory.");
   }
 
   /* Grab a pointer to the part of the buffer where filenames go */
@@ -506,7 +507,7 @@ namespace {
     * - or it's a directory.
     * (Directories cannot be read-only on Windows.)
     */
-    if (!(mode & fs::AccessType::WOK) ||
+    if (!(mode & fs::AccessType::AT_WOK) ||
         !(attr & FILE_ATTRIBUTE_READONLY) ||
         (attr & FILE_ATTRIBUTE_DIRECTORY)) {
       return 0;
@@ -526,11 +527,11 @@ void access(const String& p, int mode) {
   int r = internalAccess(p, mode);
 #ifdef _WIN32
   if (r != 0) {
-    internal::throwError(internal::getWinErrorMessage(r) + L" access \"" + p + L"\"");
+    internal::throwError(internal::getWinErrorMessage(r) + L", access \"" + p + L"\"");
   }
 #else
   if (r != 0) {
-    internal::throwError(String(strerror(r)) + L" access \"" + p + L"\"");
+    internal::throwError(String(strerror(r)) + L", access \"" + p + L"\"");
   }
 #endif
 }
@@ -539,30 +540,30 @@ void chmod(const String& p, int mode) {
   String path = path::normalize(p);
 #ifdef _WIN32
   if (::_wchmod(path.data(), mode) != 0) {
-    internal::throwError(String(strerror(errno)) + L" chmod \"" + p + L"\"");
+    internal::throwError(String(strerror(errno)) + L", chmod \"" + p + L"\"");
   }
 #else
   if (::chmod(path.str().c_str(), mode) != 0) {
-    internal::throwError(String(strerror(errno)) + L" chmod \"" + p + L"\"");
+    internal::throwError(String(strerror(errno)) + L", chmod \"" + p + L"\"");
   }
 #endif
 }
 
 bool exists(const String& p) {
-#if JSCPP_USE_ERROR
-  try {
-    fs::access(p, fs::AccessType::FOK);
-    return true;
-  } catch (const Error&) {
-    try {
-      fs::lstat(p);
-      return true;
-    } catch (const Error&) {
-      return false;
-    }
-  }
-#else
-  if (internalAccess(p, fs::AccessType::FOK) == 0) {
+// #if 0
+//   try {
+//     fs::access(p, fs::AccessType::AT_FOK);
+//     return true;
+//   } catch (const Error&) {
+//     try {
+//       fs::lstat(p);
+//       return true;
+//     } catch (const Error&) {
+//       return false;
+//     }
+//   }
+// #else
+  if (internalAccess(p, fs::AccessType::AT_FOK) == 0) {
     return true;
   }
   fs::Stats stats;
@@ -570,7 +571,7 @@ bool exists(const String& p) {
     return true;
   }
   return false;
-#endif
+// #endif
 }
 
 void mkdir(const String& p, int mode) {
@@ -582,7 +583,7 @@ void mkdir(const String& p, int mode) {
   code = ::mkdir(path.str().c_str(), mode);
 #endif
   if (code != 0) {
-    internal::throwError(String(strerror(errno)) + L" mkdir \"" + p + L"\"");
+    internal::throwError(String(strerror(errno)) + L", mkdir \"" + p + L"\"");
   }
 }
 
@@ -591,7 +592,7 @@ void mkdirs(const String& p, int mode) {
     if (fs::lstat(p).isDirectory()) {
       return;
     } else {
-      internal::throwError(String(strerror(EEXIST)) + L" mkdir \"" + p + L"\"");
+      internal::throwError(String(strerror(EEXIST)) + L", mkdir \"" + p + L"\"");
     }
   }
 
@@ -604,7 +605,7 @@ void mkdirs(const String& p, int mode) {
   if (fs::lstat(dir).isDirectory()) {
     fs::mkdir(p, mode);
   } else {
-    internal::throwError(String(strerror(ENOENT)) + L" mkdir \"" + p + L"\"");
+    internal::throwError(String(strerror(ENOENT)) + L", mkdir \"" + p + L"\"");
   }
 }
 
@@ -630,12 +631,12 @@ void unlink(const String& p) {
                        NULL);
 
   if (handle == INVALID_HANDLE_VALUE) {
-    internal::throwError(internal::getWinErrorMessage(GetLastError()) + L" unlink \"" + p + L"\"" );
+    internal::throwError(internal::getWinErrorMessage(GetLastError()) + L", unlink \"" + p + L"\"" );
   }
 
   if (!GetFileInformationByHandle(handle, &info)) {
     CloseHandle(handle);
-    internal::throwError(internal::getWinErrorMessage(GetLastError()) + L" unlink \"" + p + L"\"" );
+    internal::throwError(internal::getWinErrorMessage(GetLastError()) + L", unlink \"" + p + L"\"" );
   }
 
   if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
@@ -647,7 +648,7 @@ void unlink(const String& p) {
     if (!(info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
       SetLastError(ERROR_ACCESS_DENIED);
       CloseHandle(handle);
-      internal::throwError(internal::getWinErrorMessage(GetLastError()) + L" unlink \"" + p + L"\"" );
+      internal::throwError(internal::getWinErrorMessage(GetLastError()) + L", unlink \"" + p + L"\"" );
     }
 
     /* Read the reparse point and check if it is a valid symlink. If not, don't
@@ -658,7 +659,7 @@ void unlink(const String& p) {
         error = ERROR_ACCESS_DENIED;
       SetLastError(error);
       CloseHandle(handle);
-      internal::throwError(internal::getWinErrorMessage(GetLastError()) + L" unlink \"" + p + L"\"" );
+      internal::throwError(internal::getWinErrorMessage(GetLastError()) + L", unlink \"" + p + L"\"" );
     }
   }
 
@@ -677,7 +678,7 @@ void unlink(const String& p) {
     if (!NT_SUCCESS(status)) {
       SetLastError(RtlNtStatusToDosError(status));
       CloseHandle(handle);
-      internal::throwError(internal::getWinErrorMessage(GetLastError()) + L" unlink \"" + p + L"\"" );
+      internal::throwError(internal::getWinErrorMessage(GetLastError()) + L", unlink \"" + p + L"\"" );
     }
   }
 
@@ -694,13 +695,13 @@ void unlink(const String& p) {
   } else {
     CloseHandle(handle);
     SetLastError(RtlNtStatusToDosError(status));
-    internal::throwError(internal::getWinErrorMessage(GetLastError()) + L" unlink \"" + p + L"\"" );
+    internal::throwError(internal::getWinErrorMessage(GetLastError()) + L", unlink \"" + p + L"\"" );
   }
 #else
   code = ::unlink(path.str().c_str());
 #endif
   if (code != 0) {
-    internal::throwError(String(strerror(errno)) + L" unlink \"" + p + L"\"");
+    internal::throwError(String(strerror(errno)) + L", unlink \"" + p + L"\"");
   }
 }
 
@@ -713,7 +714,7 @@ void rmdir(const String& p) {
   code = ::rmdir(path.str().c_str());
 #endif
   if (code != 0) {
-    internal::throwError(String(strerror(errno)) + L" rmdir \"" + p + L"\"");
+    internal::throwError(String(strerror(errno)) + L", rmdir \"" + p + L"\"");
   }
 }
 
@@ -727,7 +728,7 @@ void rename(const String& s, const String& d) {
   code = ::rename(source.str().c_str(), dest.str().c_str());
 #endif
   if (code != 0) {
-    internal::throwError(String(strerror(errno)) + L" rename \"" + s + "\" -> \"" + d + L"\"");
+    internal::throwError(String(strerror(errno)) + L", rename \"" + s + L"\" -> \"" + d + L"\"");
   }
 }
 
@@ -751,6 +752,341 @@ void remove(const String& p) {
   } else {
     fs::unlink(p);
   }
+}
+
+void symlink(const String& o, const String& n) {
+  String oldpath = path::normalize(o);
+  String newpath = path::normalize(n);
+#ifdef _WIN32
+  if (!fs::exists(oldpath)) {
+    fs::symlink(o, n, ST_FILE);
+  } else if (fs::lstat(oldpath).isDirectory()) {
+    fs::symlink(o, n, ST_DIRECTORY);
+  } else {
+    fs::symlink(o, n, ST_FILE);
+  }
+#else
+  int code = ::symlink(oldpath.str().c_str(), newpath.str().c_str());
+  if (code != 0) {
+    internal::throwError(String(strerror(errno)) + L", symlink \"" + o + L"\" -> \"" + n + L"\"");
+  }
+#endif
+}
+
+void symlink(const String& o, const String& n, SymlinkType type) {
+  String oldpath = path::normalize(o);
+  String newpath = path::normalize(n);
+#ifdef _WIN32
+  int flags = 0;
+  if (type == ST_DIRECTORY) {
+    flags = file_symlink_usermode_flag | SYMBOLIC_LINK_FLAG_DIRECTORY;
+    if (!CreateSymbolicLinkW(newpath.data(), oldpath.data(), flags)) {
+      int err = GetLastError();
+      if (err == ERROR_INVALID_PARAMETER && (flags & SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE))  {
+        file_symlink_usermode_flag = 0;
+        fs::symlink(o, n, type);
+      } else {
+        internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", symlink \"" + o + L"\" -> \"" + n + L"\"");
+      }
+    }
+  } else if (type == ST_FILE) {
+    flags = file_symlink_usermode_flag;
+    if (!CreateSymbolicLinkW(newpath.data(), oldpath.data(), flags)) {
+      int err = GetLastError();
+      if (err == ERROR_INVALID_PARAMETER && (flags & SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE))  {
+        file_symlink_usermode_flag = 0;
+        fs::symlink(o, n, type);
+      } else {
+        internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", symlink \"" + o + L"\" -> \"" + n + L"\"");
+      }
+    }
+  } else if (type == ST_JUNCTION) {
+    oldpath = path::resolve(oldpath);
+    fs_create_junction(oldpath.data(), newpath.data());
+  } else {
+    internal::throwError(String(L"Error symlink_type,") + L", symlink \"" + o + L"\" -> \"" + n + L"\"");
+  }
+#else
+  int code = ::symlink(oldpath.str().c_str(), newpath.str().c_str());
+  if (code != 0) {
+    internal::throwError(String(strerror(errno)) + L", symlink \"" + o + L"\" -> \"" + n + L"\"");
+  }
+#endif
+}
+
+String realpath(const String& p) {
+  String path = path::normalize(p);
+#ifdef _WIN32
+  HANDLE handle;
+
+  handle = CreateFileW(path.data(),
+                       0,
+                       0,
+                       NULL,
+                       OPEN_EXISTING,
+                       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
+                       NULL);
+  if (handle == INVALID_HANDLE_VALUE) {
+    internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", realpath \"" + p + L"\"");
+  }
+
+  DWORD w_realpath_len;
+  WCHAR* w_realpath_ptr = NULL;
+  WCHAR* w_realpath_buf;
+
+  w_realpath_len = GetFinalPathNameByHandleW(handle, NULL, 0, VOLUME_NAME_DOS);
+  if (w_realpath_len == 0) {
+    internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", realpath \"" + p + L"\"");
+  }
+
+  w_realpath_buf = (WCHAR*)malloc((w_realpath_len + 1) * sizeof(WCHAR));
+  if (w_realpath_buf == NULL) {
+    SetLastError(ERROR_OUTOFMEMORY);
+    internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", realpath \"" + p + L"\"");
+  }
+  w_realpath_ptr = w_realpath_buf;
+
+  if (GetFinalPathNameByHandleW(
+          handle, w_realpath_ptr, w_realpath_len, VOLUME_NAME_DOS) == 0) {
+    free(w_realpath_buf);
+    SetLastError(ERROR_INVALID_HANDLE);
+    internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", realpath \"" + p + L"\"");
+  }
+
+  /* convert UNC path to long path */
+  if (wcsncmp(w_realpath_ptr,
+              L"\\\\?\\UNC\\",
+              8) == 0) {
+    w_realpath_ptr += 6;
+    *w_realpath_ptr = L'\\';
+    w_realpath_len -= 6;
+  } else if (wcsncmp(w_realpath_ptr,
+                      LONG_PATH_PREFIX,
+                      LONG_PATH_PREFIX_LEN) == 0) {
+    w_realpath_ptr += 4;
+    w_realpath_len -= 4;
+  } else {
+    free(w_realpath_buf);
+    SetLastError(ERROR_INVALID_HANDLE);
+    internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", realpath \"" + p + L"\"");
+  }
+
+  String res(w_realpath_ptr);
+  free(w_realpath_buf);
+  CloseHandle(handle);
+  return res;
+#else
+  char* buf = nullptr;
+
+#if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L
+  buf = ::realpath(path.str().c_str(), nullptr);
+  if (buf == nullptr)
+    internal::throwError(String(strerror(errno)) + L", realpath \"" + p + L"\"");
+  return buf;
+#else
+  ssize_t len;
+
+  ssize_t pathmax;
+
+  pathmax = pathconf(path.str().c_str(), _PC_PATH_MAX);
+
+  if (pathmax == -1)
+    pathmax = JSCPP__PATH_MAX;
+
+  len =  pathmax;
+
+  buf = (char*)malloc(len + 1);
+
+  if (buf == nullptr) {
+    errno = ENOMEM;
+    internal::throwError(String(strerror(errno)) + L", realpath \"" + p + L"\"");
+  }
+
+  if (::realpath(path.str().c_str(), buf) == NULL) {
+    free(buf);
+    internal::throwError(String(strerror(errno)) + L", realpath \"" + p + L"\"");
+  }
+  String res = buf;
+  free(buf);
+  return res;
+#endif
+#endif
+}
+
+void copyFile(const String& s, const String& d, bool failIfExists) {
+  String source = path::resolve(s);
+  String dest = path::resolve(d);
+  String errmessage = L"copy \"" + s + L"\" -> \"" + d + L"\"";
+
+  if (source == dest) {
+    return;
+  }
+
+#ifdef _WIN32
+  if (!CopyFileW(source.data(), dest.data(), failIfExists)) {
+    internal::throwError(String(internal::getWinErrorMessage(GetLastError())) + L", copy \"" + s + L"\" -> \"" + d + L"\"");
+  }
+#else
+
+  if (failIfExists && fs::exists(dest)) {
+    internal::throwError(String(strerror(EEXIST)) + L", " + errmessage);
+  }
+
+  int mode;
+  fs::Stats stats;
+  int r = fs::Stats::createNoThrow(stats, source, true);
+  if (r != 0) {
+    internal::throwError(String(strerror(r)) + L", " + errmessage);
+  }
+  mode = stats.mode;
+
+  FILE* sf = ::fopen(source.str().c_str(), "rb+");
+  if (!sf) {
+    internal::throwError(String(strerror(errno)) + L", " + errmessage);
+  }
+  FILE* df = ::fopen(dest.str().c_str(), "wb+");
+  if (!df) {
+    ::fclose(sf);
+    internal::throwError(String(strerror(errno)) + L", " + errmessage);
+  }
+  uint8_t buf[JSCPP_FS_BUFFER_SIZE];
+  size_t read;
+  while ((read = ::fread(buf, sizeof(uint8_t), JSCPP_FS_BUFFER_SIZE, sf)) > 0) {
+    ::fwrite(buf, sizeof(uint8_t), read, df);
+    ::fflush(df);
+  }
+  ::fclose(sf);
+  ::fclose(df);
+
+  fs::chmod(dest, mode);
+#endif
+
+}
+
+void copy(const String& s, const String& d, bool failIfExists) {
+  String source = path::resolve(s);
+  String dest = path::resolve(d);
+
+  if (source == dest) {
+    return;
+  }
+
+  Stats stat = fs::lstat(source);
+
+  if (stat.isDirectory()) {
+    if (path::relative(s, d).indexOf(L"..") != 0) {
+      internal::throwError(String(L"Cannot copy a directory into itself.") + L" copy \"" + s + L"\" -> \"" + d + L"\"");
+    }
+    fs::mkdirs(dest);
+    std::vector<String> items = fs::readdir(source);
+    for (size_t i = 0; i < items.size(); i++) {
+      fs::copy(path::join(source, items[i]), path::join(dest, items[i]), failIfExists);
+    }
+  } else {
+    fs::copyFile(source, dest, failIfExists);
+  }
+}
+
+void move(const String& s, const String& d) {
+  String source = path::resolve(s);
+  String dest = path::resolve(d);
+
+  if (source == dest) {
+    return;
+  }
+
+  fs::copy(source, dest);
+  fs::remove(source);
+}
+
+std::vector<uint8_t> readFile(const String& p) {
+  String path = path::normalize(p);
+  // if (!fs::exists(path)) {
+  //   throw cerror(ENOENT, "open \"" + p + "\"");
+  // }
+
+  // fs::Stats stat = fs::statSync(path);
+  // if (stat.isDirectory()) {
+  //   throw std::runtime_error((String("EISDIR: illegal operation on a directory, read \"") + path + "\"").toCString());
+  // }
+
+  fs::Stats stat;
+  int r = fs::Stats::createNoThrow(stat, path, false);
+  if (r != 0) {
+    internal::throwError(String(strerror(r)) + L", open \"" + p + L"\"");
+  }
+
+  if (stat.isDirectory()) {
+    internal::throwError(String(strerror(EISDIR)) + L", read \"" + p + L"\"");
+  }
+
+  long size = stat.size;
+
+#ifdef _WIN32
+  FILE* fp = ::_wfopen(path.data(), L"rb");
+#else
+  FILE* fp = ::fopen(path.str().c_str(), "rb");
+#endif
+  if (!fp) {
+    internal::throwError(String(strerror(errno)) + L", open \"" + p + L"\"");
+  }
+
+  std::vector<uint8_t> buf(size, 0);
+  size_t read = ::fread(&buf[0], sizeof(uint8_t), size, fp);
+  ::fclose(fp);
+  if (read != size) {
+    internal::throwError(String(strerror(errno)) + L", read \"" + p + L"\"");
+  }
+  return buf;
+}
+
+String readFileAsString(const String& p) {
+  std::vector<uint8_t> buf = fs::readFile(p);
+  return std::string(buf.begin(), buf.end());
+}
+
+namespace {
+  void internalWriteFile(const String& p, const uint8_t* buf, size_t size, String mode) {
+    if (fs::exists(p)) {
+      if (fs::lstat(p).isDirectory()) {
+        internal::throwError(String(strerror(errno)) + L", open \"" + p + L"\"");
+      }
+    }
+
+    String path = path::normalize(p);
+
+  #ifdef _WIN32
+    FILE* fp = ::_wfopen(path.data(), mode.data());
+  #else
+    FILE* fp = ::fopen(path.str().c_str(), mode.str().c_str());
+  #endif
+
+    if (!fp) {
+      internal::throwError(String(strerror(errno)) + L", open \"" + p + L"\"");
+    }
+
+    ::fwrite(buf, sizeof(uint8_t), size, fp);
+    ::fflush(fp);
+    ::fclose(fp);
+  }
+}
+
+void writeFile(const String& p, const std::vector<uint8_t>& buf) {
+  internalWriteFile(p, buf.data(), buf.size(), L"wb");
+}
+
+void writeFile(const String& p, const String& str) {
+  std::string utf8 = str.str();
+  internalWriteFile(p, (const uint8_t*)(utf8.data()), utf8.size(), L"wb");
+}
+
+void appendFile(const String& p, const std::vector<uint8_t>& buf) {
+  internalWriteFile(p, buf.data(), buf.size(), L"ab");
+}
+
+void appendFile(const String& p, const String& str) {
+  std::string utf8 = str.str();
+  internalWriteFile(p, (const uint8_t*)(utf8.data()), utf8.size(), L"ab");
 }
 
 }
